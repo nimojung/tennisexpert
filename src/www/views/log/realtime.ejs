@@ -1,0 +1,298 @@
+<html>
+<head>
+	<title>실시간 화면</title>
+	<% include ../common/header.ejs %>
+	<script src="/js/code.js"></script>
+	<script src="/js/plugin.js"></script>
+	<link rel="stylesheet" type="text/css" href="/css/plugin.css">
+</head>
+<style type="text/css">
+
+	/* 콘솔 테스트 */
+	.terminal_window {
+		margin: 0 auto;
+		width: 350px;
+		height: 200px;
+		text-align: left;
+		margin-top: 15px;
+		postion: relative;
+		border-radius: 10px;
+	}
+	.terminal_window header {
+		background-color: #E0E8F0;
+		height: 30px;
+		border-radius: 8px 8px 0 0;
+		padding-left: 10px;
+	}
+
+	.terminal_window {
+		background-color: #0D1F2D;
+		color: #F4FAFF;
+		font-size: 11pt;
+	}
+
+
+
+
+</style>
+
+
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+
+	<div id="container">
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-2 control-label" style="height:20px; font-size: 12px;" id="navigation">실시간 보기</label>
+			<div class="col-sm-9">
+				<div class="col-sm-2"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-1"></div>
+				<form role="form"></form>
+				<div class="col-sm-3" style="padding-left: 0px;">
+				</div>
+			</div>
+		</div>
+	</div>
+	
+		<div class="col-sm-6">
+			<table 
+			class="table table-bordered table-striped table-customized" 
+			id="VulnerabilityList" 
+			data-toggle="table" 
+			data-url="/packet/control/slave?id=<%=id%>
+			">
+			<thead>
+				
+				<tr class="center">
+					<th data-field="category" data-formatter="formatter" data-width= "10">
+						패킷분류
+					</th>
+
+					<th data-field="cnt" data-formatter="formatter2" data-width= "-3">
+						상세정보
+					</th>
+				</tr>
+
+			</thead>
+		</table>
+	</div>
+
+	
+	<div class="col-sm-6" style="height: 100px;">
+		<div class="form-group form-group-sm col-sm-8">
+			<label class="control-label">이름</label>
+			<input type="text" class="form-control" style="width: 200px;" id="name" disabled>
+			<label class="control-label">IP 주소 </label>
+			<input type="text" class="form-control" style="width: 200px;" id="ip" disabled>
+		</div>
+
+		<div class="col-sm-5">
+			<button class=" btn btn-danger btn-lg" id="btnStop" style="width:100px; background-color:transparent;border:0 solid black;" >
+				
+				<span id="stopTest"></span>
+				<xbutton>
+				</div>
+				<div class="col-sm-3 col-sm-offset-3" style="width: 100%; bottom: 160px; margin-left: 120px;">
+					<div class="my-progress-bar" id = "circle_color"></div>
+					
+				</div>
+
+				<div>
+					<label><input type="text" style="background-color:transparent;border:0 solid black;text-align:right; margin-left:20%;" id="ing" disabled/></label>
+				</div>  
+
+				<div class="col-sm-12" style="width: 100%; bottom: 100px;">
+					<!-- 터미널 박스 -->
+					<div class="terminal_window">
+						<div id="typed-strings" class="terminal_text">
+						</div>
+						<span id="tailText"></span>
+					</div>
+				</div>
+
+			</div>
+
+
+		<script type="text/javascript">
+			var inStatus = 0;
+			var inVar = 0;
+
+			$("#VulnerabilityList").on('load-success.bs.table', function (e, data) {
+				getStatistics(data);
+			});
+			$(document).ready(function(){
+				var stop = 0; 
+				var id = '<%= id%>';
+					//var status = 0;
+					$('#btnStop').on('click', function() {
+						if(inStatus < 2){                           
+							$.post("/packet/config/stop",{
+								id: id,
+								status: '4'
+							}, function(data){
+								console.log(data);
+								if(data.changes == "1"){
+									console.log("성공");
+									getTotal();
+									
+
+								}else{                         
+									alert('실패');
+								}
+							});
+						}else{
+							location.href = '/packet/detail?id='+id;
+						}
+					});
+					
+				});
+
+		function getControlConfig(){ //역활 : 
+			console.log("getControlConfig");
+			var msgTest = "중지";
+			var valueTest = "";
+			$.get('/packet/config/controlconfig?id=<%= id%>', function(data){
+				if(data.length > 0){                    
+					$('#name').val(data[0].name);
+					$('#ip').val(data[0].ip);                   
+					// $('#abc').val(data[0].name); 
+					inStatus = data[0].status; //상태값
+					var btnId = status; 
+					var btnClass = "";
+					
+					if(inStatus == 1){//상태값에 따라 버튼이 바뀜
+						msgTest = '중지';
+						$('#btnStop').css("background-color", "#FF0000");
+					}else if(inStatus >= 2){
+						msgTest ='결과';
+						$('#btnStop').css("background-color", "#009900");
+						clearInterval(inVar); //결과 버튼이 바뀌고 나서 리플레쉬 안됨.
+						console.log("clearInterval", inVar);
+
+					}
+					
+					$('#stopTest').html(msgTest);                   
+
+				}
+			});
+		}
+
+
+		function getTailFile(){ // 역활: 명령어창 나오게 하기
+			console.log("getTailFile");
+			$.get('/packet/config/tailfile?id=<%= id%>', function(data){
+				$("#tailText").html("<pre id='pre' style='white-space: pre-wrap; overflow: auto; max-height: 170px; color:lightgreen; background:#0D1F2D;,transparent;border:0 solid black;text-align:left;'>" + data + "</pre>");
+				$('#pre').scrollTop($('#pre').prop("scrollHeight") );
+			});
+		}
+
+			function getStatistics(data){ //역할 : 퍼센트
+				var cnt  = 0, cnt2 = 0, try_count = 0, success_count = 0, fail_count = 0;
+				for(var i=0; i<data.length; i++){
+					cnt += data[i].cnt; // 전체(카테고리)
+					cnt2 += data[i].cnt2; // 완료(카테고리)
+					try_count += data[i].try_count;
+					success_count += data[i].success_count;
+					fail_count += data[i].fail_count;
+					 //try_count += 50;
+					 //success_count += 10;
+					}
+					var percent = 0;
+					var color ='#0066FF';
+					if(cnt > 0){                    
+					// percent = Math.round(cnt2 / cnt * 100);
+					percent = Math.round(success_count / try_count * 100, -2); //circle progressbar 퍼센트값 나타내기
+				}
+				
+				if(success_count == 0 && try_count == 0){   
+				console.log("success_count===============>"+ success_count);                
+					percent = 0;
+
+				}
+				console.log('percent>>>>>>>>'+percent);
+
+				$('#ing').val("성공 : " + success_count + "  실패 : " + fail_count + "  전체 : " + try_count);
+				//$('#ing_2').html(percent + "%");
+
+				$(".my-progress-bar").circularProgress({ //circle bar
+					line_width: 3,
+					color: color,
+					starting_position: 0, // 12.00 o' clock position, 25 stands for 3.00 o'clock (clock-wise)
+					percent: percent,// percent starts from //여기안에 퍼센트 변수 들어가면됨
+					percentage: true,
+				}).circularProgress('animate', percent, 500);
+					$('#circle_color').css("background-color", "#F4F4F4");
+					$('#circle_color').css("border-radius", "50%");
+
+			}
+
+
+			function getTotal(){
+				console.log("getTotal");
+				getControlConfig();
+				getTailFile();
+				$("#VulnerabilityList").bootstrapTable('refresh', {slient:true});
+			}
+			getTotal();
+			var inVar = setInterval(getTotal, 5000);
+
+
+			function formatter(value, row, index, field) {
+				var id = row.id;
+				if(field == "cnt"){
+					var total = row.cnt;
+					var used = row.cnt2;
+					var test_value = 99.124;
+					var percent = Math.round(used / total * 100, -2);
+					var percent2 = percent + "%";
+
+					result = '<div class="progress" style="margin-bottom:0px; border:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:50%;">' + percent2 + '</div><label style="width:50%; text-align:right;">사용 : ' + used + " / 전체 : " + total + "</label></div>";
+				}else if(field == "category"){
+					console.log('category:', value);
+					result = category[value];
+				}
+				return result;
+			};
+
+		function formatter2(value, row, index, field) { // 테이블 progress bar
+			var fontColor = '';
+			var success_count = row.success_count; // 성공 횟수
+			var fail_count = row.fail_count; //실패 횟수
+			var try_count = row.try_count; //시도 횟수 
+			var prg = row.id;
+			var percent = Math.round(success_count / try_count * 100, -2); 
+			// var percent = "55"
+			if(success_count == 0 && try_count == 0){
+				percent =0;
+			}
+			var percent2 = percent + "%";
+
+			
+			if(percent >= 0 && percent <= 50){  //progressbar 색 변환
+				console.log('50이하'); 
+				var color = 'DF2020';
+				// fontColor = 'white';
+			}else if(percent >= 51 && percent <= 80){ 
+				console.log('51이상 80이하'); 
+				color = '2068DF'; 
+				fontColor = '000000';
+			}else if(percent >= 81 && percent <= 100){ 
+				console.log('81이상 100이하'); 
+				color = '5C9857'; 
+				fontColor = '000000';
+			}
+			if(percent >= 0 && percent <= 50){
+				fontColor = '000000';
+			}
+			console.log(row.success_count, row.fail_count, row.try_count);
+
+
+			result = '<div class="col-sm-13"><div class="col-sm-11" style="margin-bottom:0px; border:0px; padding-right:0px; padding-left:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:' + percent2 +'; background-color: ' + color + '; color:' + fontColor + ';">' + percent2 + '</div></div><div class="col-sm-12" style="text-align:right; font-size: 12px;">'+ "성공 : "+ success_count + " 실패 : " + fail_count + "  시도 : " + try_count +'</div></div>';
+			return result;
+		}
+
+
+	</script>
+	</html>

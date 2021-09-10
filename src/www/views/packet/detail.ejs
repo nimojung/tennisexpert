@@ -1,0 +1,326 @@
+﻿<html>
+<head>
+	<title><%=title %></title>
+	<% include ../common/header.ejs %>
+	<script src="/js/code.js"></script>
+	<style>
+	.slow .toggle-group { transition: left 0.7s; -webkit-transition: left 0.7s; }
+	.fast .toggle-group { transition: left 0.1s; -webkit-transition: left 0.1s; }
+	.quick .toggle-group { transition: none; -webkit-transition: none; }
+	.middle {
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	fieldset.scheduler-border {
+		border: 1px groove #ddd !important;
+		padding: 0 0.8em 0.8em 0.8em !important;
+		margin: 0 0 0.5em 0 !important;
+		-webkit-box-shadow:  0px 0px 0px 0px #000;
+		box-shadow:  0px 0px 0px 0px #000;
+	}
+/*legend.scheduler-border {
+	font-size: 1.2em !important;
+	font-weight: bold !important;
+	text-align: left !important;
+	}*/
+	legend.scheduler-border {
+		width:inherit; /* Or auto */
+		padding:0 10px; /* To give a bit of padding on the left and right */
+		border-bottom:none;
+		font-size: 15px;
+	}
+</style>
+</head>
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	<!--body -->
+	<div id="container">
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-3 control-label" style="height:20px;" id="navigation"><%=titleDetail %></label>
+			<div class="col-sm-9">
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+					<button class="btn btn-primary btn-sm" id="btnBack" style="margin-left: 130px;">이전</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-12">
+			<fieldset class="scheduler-border">
+				<legend class="scheduler-border" style="height: 15px;">기본 정보</legend>
+				<div class="col-sm-12">
+					<div class="col-sm-4">
+						<label class="control-label input-label">이름 : </label>
+						<!-- <div class="controls bootstrap-timepicker"> -->
+							<input type="text" class="datetime" id="packetName" style="width: 100px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+							<!-- <i class="icon-time"></i> -->
+							<!-- </div> -->
+						</div>
+						<div class="col-sm-4">
+							<label class="control-label input-label">IP : </label>
+							<input type="text" class="datetime" id="packetIp" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+						<div class="col-sm-4">
+							<label class="control-label input-label">결과 : </label>
+							<input type="text" class="datetime" id="packetStatus" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+					</div>
+					<div class="col-sm-12" style="padding-top: 10px;">
+						<div class="col-sm-4">
+							<label class="control-label input-label">분류 : </label>
+							<input type="text" class="datetime" id="packetFlag" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+
+						<div class="col-sm-4" style="margin-left: -15px;">
+							<label class="control-label input-label">시작 : </label>
+							<input type="text" class="datetime" id="packetRdate" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+						<div class="col-sm-4" style="margin-left: 15px;">
+							<label class="control-label input-label">종료 : </label>
+							<input type="text" class="datetime" id="packetUdate" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+		<div class="col-sm-12">
+		<table 
+		class="table table-bordered table-striped table-customized" 
+		id="packetTable" 
+		data-toggle="table" 
+		border="1" 
+		data-url="/packet/detail/slaveList?id=<%=id%>"
+		style="text-align: center;"
+		>
+		<thead>
+			<tr class="center">
+				<th data-field="category" data-width="20" data-formatter="formatterName">
+					패킷명
+				</th>
+				<th data-field="status" data-width="15" data-formatter="formatterStatus">
+					상태
+				</th>
+				<th data-field="results" data-width="225" data-formatter="formatterResult">
+					결과
+				</th>
+				<th data-field="rdate" data-width="100" data-formatter="formatterDate">
+					테스트 일시
+				</th>
+				<th data-field="udate" data-width="100">
+					종료일시
+				</th>
+			</tr>
+		</thead>
+	</table>
+</div>
+	<!-- <div class="col-sm-12">
+	</div> -->
+</div>
+
+<!-- Modal -->
+<div class="modal fade" role="dialog" id="myModal">
+	<div class="modal-dialog">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">×</button>
+				<h4 class="modal-title">원본 결과</h4>
+			</div>
+			<div class="modal-body">
+				<p>결과</p>
+				<textarea rows="10" cols="80" style="resize: none;" id="options"></textarea>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+</body>
+<!-- bottom(하단처리) -->
+<% include ../common/bottom.ejs %>
+<script>
+	//종료 일시 숨기기
+	$(function(){
+		var $table = $('#packetTable');
+		$table.bootstrapTable('hideColumn', 'udate');
+	});
+	
+
+	var id = <%= id%>;
+	//이전 버튼
+	$('#btnBack').click(function(){
+		window.history.back();
+	});
+	//결과 컬럼
+	function formatterResult(value, row, index, field) {
+		var font_color = "";
+		var color = "";
+		if(field == "results"){ 
+			var try_count = row.try_count; //시도 횟수
+			var success_count = row.success_count; // 성공 횟수
+			var fail_count = row.fail_count; //실패 횟수
+			//% 계산
+			var percent = Math.round(success_count / try_count * 100, -2);
+			var	font_color = '#fff';
+
+			//만약 null 값이 들어오면 0으로 지정
+			if(success_count == null && try_count == null){
+				fail_count = 0;
+				success_count = 0;
+				try_count = 0;
+				percent = 0;
+			}
+			//percent값이 NaN값이 들어오는 경우 0으로 셋팅
+			if(isNaN(percent)){
+				percent = 0;
+			}
+			
+			//3자리 마다 콤마 처리			
+		    var success_value = numberFormatter(success_count);
+		    var fail_value = numberFormatter(fail_count);
+		    var try_value = numberFormatter(try_count);
+
+			// 퍼센트가 0 ~ 20% 일때 글자색이 흰색이라 (바탕도 흰색) 잘 안보여서 추가
+			if(percent >= 0 && percent <= 20){
+				font_color = 'black';
+			}
+			// var percent = '55';
+			var percent2 = percent + "%"; 
+
+			if(percent >= 0 && percent <= 50){
+				color = 'DF2020';
+			}else if(percent >= 51 && percent <= 80){
+				color = '2068DF';
+			}else if(percent >= 81 && percent <= 100){
+				color = '5C9857';
+			}else{
+				console.log('퍼센트값 : ' + percent + ', 퍼센트값이 이와 같이 정상적으로 출력되지 않았습니다.');
+			}
+			result = '<div class="col-sm-12"><div class="col-sm-4 progress " style="margin-bottom:0px; border:0px; padding-right:0px; padding-left:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:' + percent2 +'; background-color: ' + color + '; color: ' + font_color + ';">' + percent2 + '</div></div><div class="col-sm-8" style="text-align:right;">'+ "성공 : "+ success_value + " / 실패 : " + fail_value + " / 시도 : " + try_value +'</div></div>';
+		}
+		return result; 
+	}
+	
+	function numberFormatter(data){
+		var total = 0;
+		if (data > 0){
+			return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+		return data;
+	};
+
+	//테이블에 시작 / 종료 일시 표시
+	function formatterDate(value, row, index, field) {
+		var date = "";
+		date = "시작 : " + row.rdate +  "<br>" + "종료 : "  + row.udate;
+		return date;
+	}
+
+	//테이블에 스캔명 code.js 활용
+	function formatterName(value, row, index, field) {
+		result = category[value];
+		return result;
+	}
+
+// 상태값(status)
+// 시작 : 0
+// 진행 : 1
+// 완료 : 2
+// 실패 : 3
+// 중지 : 4
+
+	//상태 컬럼에 성공, 실패, 진행등의 값을 보여주고 각각의 내용마다 색상을 적용함
+	function formatterStatus(value, row, index, field) {
+		var status_values = row.status;
+		if (field == "status") {
+			result = "";
+			var btnMsg = "";
+			var color = "";
+			if(row.status == 0){ //시작
+                btnMsg = "시작";
+                color = "#5bc0de";
+            }else if(row.status == 1){ //진행
+                btnMsg = "진행";
+                color = "#E2B636";
+            }else if(row.status == 2){ //완료
+                btnMsg = "완료";
+                color = "#2068DF";
+            }else if(row.status == 3){ //실패
+                btnMsg = "실패";
+                color = "#c9302c";
+            }else if(row.status == 4){ //중지
+                btnMsg = "중지";
+                color = "#c9302c";
+            }
+		}
+		// result = '<span>' + btnMsg + '</span>' ;
+		result = '<span'+ ' style="color:' + color + '; font-weight:bold">' + btnMsg + '</span>' ;
+		return result;
+	}
+
+	//패킷상세 결과보기 화면에서 기본정보 표시
+	function getControlConfig(){
+		$.get('/scan/detail/slave?id=<%= id%>', function(data){
+			var scan_msg = "";
+			var flag_msg = "";
+			var scan_msg_color = "";
+			for(var i = 0; i < data.length; i++){
+				//상태
+				if(data[i].status == 0){ //시작
+					scan_msg = "시작";
+					scan_msg_color = "#5bc0de";
+				}else if(data[i].status == 1){ //진행
+					scan_msg = "진행";
+					scan_msg_color = "#E2B636";
+				}else if(data[i].status == 2){ //완료
+					scan_msg = "완료";
+					scan_msg_color = "#2068DF";
+				}else if(data[i].status == 3){ //실패
+					scan_msg = "실패";
+					scan_msg_color = "#c9302c";
+				}else if(data[i].status == 4){ //중지
+					scan_msg = "중지";
+					scan_msg_color = "#c9302c";
+				}
+
+				//분류
+				if(data[i].flag == 1){
+					flag_msg = "패킷"
+				}else if(data[i].flag == 2){
+					flag_msg = "스캔"
+				}
+				$('#packetRdate').val(data[i].rdate);
+				$('#packetUdate').val(data[i].udate);
+				$('#packetFlag').val(flag_msg);
+				$('#packetIp').val(data[i].ip);
+				$('#packetStatus').val(scan_msg);
+				$("#packetStatus").css({"color":scan_msg_color, "font-weight":"bold"});
+				$('#packetName').val(data[i].name);
+			}
+		});
+
+
+		
+	}
+	function getTotal(){
+		getControlConfig();
+	}
+	//기본정보 표시를 위해 선언
+	getTotal();
+
+
+
+</script>
+</html>

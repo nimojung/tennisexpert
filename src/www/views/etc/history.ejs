@@ -1,0 +1,52 @@
+		<div id="history">
+			<div class="dash-box">
+				<span id="history_list"></span>
+			</div>
+		</div>
+
+		<script>
+			var $history = $('#history_list');
+			 var inVar = 0;
+	  	
+			$(function(){
+				reloadHistoryInfo();
+	  			
+	  			// 30초 주기로 새로고침
+				inVar = setInterval(reloadHistoryInfo, 30000);
+			});	
+			
+			// String.format으로 하게 하는 설정 함수
+			String.prototype.format = function() {
+				result = this;
+				for (arg in arguments) {
+					result = result.replace("{" + arg + "}", arguments[arg])
+				}
+				return result;
+			}
+			
+			function reloadHistoryInfo(){
+				$.get('/etc/history', function(data){
+					var outter = "";
+					var cnt = 0;
+					data.forEach((row) => {		
+						var contents = row.contents;
+						if(contents.length > 16){
+							contents = contents.substring(0, 10) + "...";
+						}
+						cnt++;
+						var category =  "{0} - {1}".format(row.major, row.minor);
+						outter += "<label style='font-weight:300; margin-bottom:0px;'>[{0}] {1}</label>".format(row.rdate, category);
+					});
+					// 내역이 없을 경우					
+					if(cnt < 1){						
+						outter = "최근 사용 내역이 없습니다.";
+						cnt++;
+					}
+					// 내역이 6개가 안될 경우, 빈칸으로 채우기
+					for(var i=cnt; i<6; i++){
+						outter += "<br>";
+					}
+					$history.html(outter);
+				});
+			}
+		</script>

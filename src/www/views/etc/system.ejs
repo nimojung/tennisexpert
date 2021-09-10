@@ -1,0 +1,146 @@
+		<div id="system">
+			<div class="col-sm-6">
+				<div class="row">
+					<table class="table table-bordered  table-striped table-customized" 
+						id="system_table"
+			  			data-toggle="table"	
+						data-url="/etc/system_info">
+						<thead>
+							<tr class="center">
+								<th data-field="cpu" data-formatter="formatter">CPU</th>
+								<th data-field="memory" data-formatter="formatter">MEM</th>
+								<th data-field="disk" data-formatter="formatter">DISK</th>
+								<th data-field="cpu_total">CPU Total</th>
+								<th data-field="memory_total">MEM Total</th>
+								<th data-field="disk_total">DISK Total</th>
+							</tr>
+						</thead>				
+					</table>
+				</div>
+				<div class="row">
+					<div class="panel panel-success dash-box-small">
+		  				<div class="panel-body">
+							<div class="row">
+								<div class="col-sm-5"><label>CPU</label></div>
+								<div class="col-sm-7" style="text-align: right;"><span id="cpu"></span></div>
+							</div>					
+							<div class="row">
+								<div class="col-sm-5"><label>MEM</label></div>
+								<div class="col-sm-7" style="text-align: right;"><span id="memory"></span></div>
+							</div>		
+							<div class="row">
+							<div class="col-sm-5"><label>DISK</label></div>
+							<div class="col-sm-7" style="text-align: right;"><span id="disk"></span></div>
+						</div>
+		  	  			</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<canvas id="system_chart" width="150" height="180"></canvas>
+			</div>
+		</div>
+		<script>
+			var $table = $('#system_table');
+			 var inVar = 0;
+	  	
+			$(function(){
+	  			$table.bootstrapTable('hideColumn', 'cpu_total');
+	  			$table.bootstrapTable('hideColumn', 'memory_total');
+	  			$table.bootstrapTable('hideColumn', 'disk_total');
+	  			
+	  			$table.on('load-success.bs.table', function (e, data) {  				
+	  				setSystemChart('cpu', data[0]);
+					setInfo(data[0]);
+	    		}).on('click-cell.bs.table', function(e, field, value, row, $element){
+	    			setSystemChart(field, row);
+				});
+	  			
+	  			// 30초 주기로 새로고침
+				inVar = setInterval(reloadSystemInfo, 30000);
+			});			
+			function reloadSystemInfo(){
+				$table.bootstrapTable('refresh');
+			}
+			
+			function bytesToSize(bytes) {
+				var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+				if (bytes == 0) return '0 Byte';
+				var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+				return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+			};
+			
+			function setInfo(row){
+				$('#cpu').html(row.arch + " / " +  row.cpu_count);
+				$('#memory').html(bytesToSize(row.memory_total));
+				$('#disk').html(row.hdd_total);
+			}
+			
+			function setSystemChart(field, row){		
+				var title = "CPU";
+				var data = [];
+				var data_color = "#00ff00", base_color = "#6699ff";
+				var percent = 0;
+				
+				if(field == "cpu"){
+					title =  "CPU";
+					percent = Math.ceil(row.cpu / row.cpu_total * 100);
+					var diff = row.cpu_total - row.cpu;
+					data.push(row.cpu);
+					data.push(diff);
+				}else if(field == "memory"){
+					title =  "MEM";
+					percent = Math.ceil(row.memory / row.memory_total * 100);
+					var diff = row.memory_total - row.memory;				
+					data.push(row.memory);
+					data.push(diff);
+				} else if(field == "disk"){
+					title =  "DISK";
+					percent = Math.ceil(row.disk / row.disk_total * 100);
+					var diff = row.disk_total - row.disk;				
+					data.push(row.disk);
+					data.push(diff);
+				}
+				
+				if(percent > 80){
+					data_color = "#cc3300";
+				}else if(percent > 40){
+					data_color = "#ff6600";
+				}
+						
+				var chart_json = new Array();
+				var chart_info = new Object();
+				chart_json.type = 'doughnut';
+				chart_json.data = new Object();
+				chart_json.data.labels =  ["use", "free"];
+				var chart_data = new Array();
+				var chart_dataset = new Object();
+				chart_dataset.label = "System Info"
+				chart_dataset.data = data;
+				chart_dataset.backgroundColor = [data_color, base_color];
+				chart_data.push(chart_dataset);
+				chart_json.data.datasets = chart_data;
+				var chart_options = new Object();
+				chart_options.legend = new Object();
+				chart_options.legend.display = false;
+				chart_options.title = new Object();
+				chart_options.title.display = true;
+				chart_options.title.text = title;
+				chart_options.title.position = "bottom";
+				chart_json.options = chart_options;				
+				new Chart($('#system_chart'), chart_json);
+			}
+			
+			function formatter(value, row, index, field){
+				if(field == "cpu"){
+					var percent = row.cpu / row.cpu_total * 100;
+					return percent.toFixed(2) + "%";
+				}else if(field == "memory"){
+					var percent = row.memory / row.memory_total * 100;
+					return percent.toFixed(2) + "%";
+				}else if(field == "disk"){
+					var percent = row.disk / row.disk_total * 100;
+					return percent.toFixed(2) + "%";
+				}
+			}
+		</script>

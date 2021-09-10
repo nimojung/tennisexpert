@@ -1,0 +1,39 @@
+
+.circular-progress-bar {
+    position: relative;
+    margin: 0 auto;
+    /*background: #44484b;
+     border-radius: 50%;*/
+
+}
+
+.progress-percentage, .progress-text {
+    position: absolute;
+    width:100%;
+    top: 60%;
+    left: 65%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 2px 40px;
+
+
+}
+
+.progress-percentage {
+	font-size: 20px;
+    /*transform: translate(-50%, -85%);*/
+    transform: translate(-80%, -85%);
+       display: inline-block;
+    vertical-align: baseline;
+
+
+}
+
+.progress-text {
+    transform: translate(-50%, 0%);
+    color: #585858;
+    font-size: 12px;
+}
+
+
+

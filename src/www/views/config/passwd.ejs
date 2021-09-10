@@ -1,0 +1,264 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+	
+	<title>비밀 번호 변경 </title>
+	<% include ../common/header.ejs %>
+
+
+	
+</head>
+
+
+
+<body  class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	<div id="container">
+
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-2 control-label" style="height:20px;" id="navigation">비밀번호 설정</label>
+			<div class="col-sm-9">
+
+				<div class="col-sm-2"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-1"></div>
+				<form role="form"></form>
+
+				<div class="col-sm-3" style="padding-left: 0px;">   
+					
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label style="margin-left: 15px;">현재 비밀번호</label><input type="password" class="form-control" style="width: 300px; margin-left: 15px;" id="now_pw" placeholder="비밀번호를 입력해주세요."><p id="msg"></p>
+			<label style="margin-left: 15px;">새 비밀번호</label><input type="password" class="form-control" style="width: 300px; margin-left: 15px;"  id="new_pw" placeholder="새 비밀번호를 입력해주세요." ><p id="msg2"></p>
+			<label style="margin-left: 15px;">새 비밀번호 확인</label><input type="password" class="form-control" style="width: 300px; margin-left: 15px;" id="new_pw_check"placeholder="새 비밀번호를 한번 더 입력하세요." ><p id="msg3"></p>
+
+		</div>
+		<div class="form-group">
+
+			<input type="checkbox" id="pw_check_box " style="margin-left: 15px;">비밀번호 보여주기
+			<br>
+			<button type="submit" class="btn btn-primary"  aria-label="Close" id="btnch" style="margin-left: 15px;" ><span class="glyphicon glyphicon-refresh"></span> 변경하기</button>
+		</div>
+		<!--모달 창 띄우기 -->
+		<div class="modal fade" id="MyModal_2" tabindex="-1" role="dialog" aria-labelledby="MyModal_2Label" aria-hidden="true" style="color:black;">
+			<div class="modal-dialog modal-sm" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+
+					</div>
+					<div class="modal-body">
+						<h6 class="modal-title" id="lbl5"><label id="lblCh"></label>비밀번호가 변경 되었습니다.</h6>
+					</div>
+					<div class="modal-body" style="height: 50px;" align="right">
+						<button type="button" class="btn btn-primary btn-sm " data-dismiss="modal">닫기</button>
+					</div> 
+				</div>
+			</div>
+		</div>
+
+
+		<!--모달 팝업-->
+		<div class="modal fade" id="MeModal" style="color:black;"> 
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+
+					<div class="modal-body" >
+						비밀번호를 입력하세요.
+					</div>
+
+					<div class="modal-body" style="height: 50px;" align="right">
+						<button class="btn btn-primary btn-sm" data-dismiss="modal" aria-label="Close" id='btnClose' style="margin-left: 3px;" >닫기</button>
+
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			//비밀번호 유효성 검사
+			function checkValidate(pw) {
+				
+				var num = pw.search(/[0-9]/g);
+				var eng = pw.search(/[a-z]/ig);
+				var spe = pw.search(/[`~!@@#$%^&*|₩₩₩'₩";:₩/?]/gi);
+				
+
+				if(pw.length < 8 || pw.length > 20 || num < 0 || eng < 0 || spe < 0){
+					return "8~20자 영문 대 소문자, 숫자, 특수문자를 사용하세요";
+				}else if(pw.search(/₩s/) != -1){
+					return "비밀번호는 공백없이 입력해주세요.";
+				}
+				return "1";
+				
+			}           
+			
+
+			function checkPassword(idx){
+				var result = true;
+				
+				if((idx & 1) == 1){
+					if(!$("#now_pw").val()==""){
+						var result = checkValidate($("#now_pw").val());
+						if(result != "1"){
+							$('#msg').text("현재 비밀번호가 올바르게 입력되지 않았습니다.");
+							$('#msg').css('color','red');
+							
+							result = false;
+						}else{
+							$('#msg').text("현재 비밀번호가 올바르게 입력되었습니다.");
+							$('#msg').css('color','green');
+
+
+						}
+					}else{
+						$('#msg').text("필수 입력 정보입니다.");
+						$('#msg').css('color','red');
+						result = false;
+					}   
+				}
+
+				if((idx & 2) == 2){
+					if(!$("#new_pw").val()==""){
+						var result = checkValidate($("#new_pw").val());
+						if(result != "1"){
+							$("#msg2").text(result);
+							$('#msg2').css('color','red');
+							
+							result = false;
+						}else{
+							$('#msg2').text("사용가능한 비밀번호 입니다.");
+							$('#msg2').css('color','green');
+						}
+					}else{
+						$('#msg2').text("필수 입력 정보입니다.");
+						$('#msg2').css('color','red');
+						result = false;
+					}
+				}
+
+
+				if((idx & 4) == 4){
+					if(!$("#new_pw_check").val()==""){
+						if($("#new_pw").val() !=$("#new_pw_check").val()){
+							$('#msg3').text("새 비밀번호와 동일하게 입력해주세요.");
+							$('#msg3').css('color','red');
+							
+							result = false;
+						}else{
+							$('#msg3').text("비밀번호가 일치합니다.");
+							$('#msg3').css('color','green');
+						}
+					}else{
+						$('#msg3').text("필수 입력 정보입니다.");
+						$('#msg3').css('color','red');
+						result = false;
+					}
+				}
+				return result;
+			}
+
+			$("#now_pw").focusout(function(){
+				checkPassword(1);
+			});
+
+			$("#new_pw").focusout(function(){
+				checkPassword(2);
+			});
+
+			$("#new_pw_check").focusout(function(){
+				checkPassword(6);
+			});
+
+			//비밀번호 체크박스
+			function showPassword(chkbox){              
+				if ( chkbox.checked == false )
+				{
+					$('#now_pw').attr('type', 'password');
+					$('#new_pw').attr('type', 'password');
+					$('#new_pw_check').attr('type', 'password');
+
+				}
+				else
+				{
+					$('#now_pw').attr('type', 'text');
+					$('#new_pw').attr('type', 'text');
+					$('#new_pw_check').attr('type', 'text');
+				}
+			}
+
+			$('#pw_check_box').on('click', function() {
+				showPassword(this);
+			});
+
+			$('#btnch').on('click', function() {
+						//성공 -> 1 , 실패 -> 0
+						var confirm = '0'; 
+						
+						// plain text 를 받는다.
+						var now_pw = $('#now_pw').val();
+						var new_pw = $('#new_pw').val(); //텍스트 입력한거 가져오기 
+						var new_pw_check = $('#new_pw_check').val();
+
+						if(now_pw ==''){
+							$("#MeModal").modal('show');
+							return false;
+						}
+
+						if(checkPassword(7)){
+							confirm = 1;
+						}
+						console.log('confirm=>'+confirm);
+
+						// Base64로 인코딩한다.
+						var enc_pw = btoa(now_pw); 
+						var new_pw_enc_pw = btoa(new_pw); 
+
+						// 인코딩된 pw를 서버로 전송한다.
+						try{
+							if(confirm == 1){
+								$.ajax({
+									url: '/config/passwd/check', //가져오고자하는 서버페이지 주소를 넣는다. 
+									type: 'post', //데이터를 서버로 전송하게 된다. 
+									data: {
+										now_pw: enc_pw,
+										new_pw: new_pw_enc_pw
+									},
+										success: function(t) {  //비밀번호 변경 성공 
+											if(t.result == 0){                                  
+												$('#lbl5').text("현재 비밀번호가 맞지 않습니다.");
+												$('#MyModal_2').modal('show'); 
+												
+												return;
+											}else{                                          
+												$('#lbl5').text("비밀번호가 변경 되었습니다.");
+												$('#MyModal_2').modal('show'); 
+												console.log('성공');
+												return;
+											}
+										}
+									});
+							}else if(confirm == 0){ //비밀번호 변경 실패 
+								$('#lbl5').text("변경한 비밀번호가 맞지 않습니다.");
+								$('#MyModal_2').modal('show');
+								return;
+							}
+						}catch (e) {
+							alert('실패');
+						}
+					});
+
+				</script>
+
+
+			</div>
+		</div>
+	</body>
+
+	<!-- bottom(하단처리) -->
+	<% include ../common/bottom.ejs %>
+	</html>

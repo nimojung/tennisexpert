@@ -1,0 +1,223 @@
+<html>
+
+<head>
+	<title>
+		<%= title %>
+	</title>
+	<% include ./common/header.ejs %>
+	<script src='/js/Chart.min.js'>
+	</script>
+	<style>
+	.dash-fill { 
+		display: flex;
+		justify-content: center;
+		padding-top: 3px;
+		padding-left: 3px;
+		padding-right: 3px;
+		padding-bottom: 3px;
+	}
+	.dash-box {
+		width: 350px;
+		padding-top: 0px;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-bottom: 0px;
+		margin-top: 3px;
+		margin-left: 3px;
+		margin-right: 3px;
+		margin-bottom: 3px;
+	}           
+	.dash-box-small {
+		width: 190px;
+		padding-top: 0px;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-bottom: 0px;
+		margin-top: 0px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+	}               
+	.panel-heading{
+		padding: 5px;
+	}
+	.panel-body{
+		padding: 5px;
+	}
+	
+	.no-padding {
+		padding-top: 0px;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-bottom: 0px;
+	}
+	
+	/* bootstrap.css 종속되어서 여기서 최종 반영을 */
+	.table > tbody > tr > th, 
+	.table > tbody > tr > td{
+		text-align: center;
+		padding :5px;
+	}
+	
+	#status{
+		padding-top: 3px;               
+	}
+	/*.pagination {
+		margin : 5px;
+	}*/
+</style>
+</head>
+
+<body>
+	<!-- menu -->
+	<% include ./common/menu.ejs %>
+	<!--body -->
+	<div id="container">
+		<div class="row dash-fill">
+			<div class="col-sm-6 panel panel-primary dash-box">
+				<div class="panel-heading">테스트 (최근 테스트 정보)</div>
+				<div class="panel-body">
+					<% include ./etc/test_info.ejs %>
+				</div>
+			</div>
+			<div class="col-sm-6 panel panel-danger dash-box">
+				<div class="panel-heading">사용 내역</div>
+				<div class="panel-body">
+					<% include ./etc/history.ejs %>
+				</div>
+			</div>
+		</div>
+		<div class="row dash-fill">
+			<div class="col-sm-6 panel panel-warning dash-box">
+				<div class="panel-heading">취약성 (최근 점검 정보)</div>
+				<div class="panel-body">
+					<% include ./etc/check_info.ejs %>
+				</div>
+			</div>
+			<div class="col-sm-6 panel panel-info dash-box">
+				<div class="panel-heading">시스템 상태</div>
+				<div class="panel-body">
+					<% include ./etc/system.ejs %>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+// 상태값(status)
+// 시작 : 0
+// 진행 : 1
+// 완료 : 2
+// 실패 : 3
+// 중지 : 4
+		//메인화면 취약성 테이블 버튼들
+		function formatterWeakResult(value, row, index, field) {
+			if (field == "result") {				
+				result = "";
+				var btnId = "btnWeakResult" + row.id;
+				var btnMsg = ""; 
+                var color = "";
+
+				if(row.status == 0){ //시작
+                    btnMsg = "시작";
+                    color = "#5bc0de";
+                }else if(row.status == 1){ //진행
+                    btnMsg = "진행";
+                    color = "#E2B636";
+                }else if(row.status == 2){ //완료
+                	btnMsg = "완료";
+                    color = "#2068DF";
+                }else if(row.status == 3){ //실패
+                    btnMsg = "실패";
+                    color = "#c9302c";
+                }else if(row.status == 4){ //중지
+                    btnMsg = "중지";
+                    color = "#c9302c";
+                }
+
+				// result = '<button class="btn ' + btnClass + ' btn-xs" id="' + btnId +'">' + btnMsg + '</button>';
+				result = '<button class="btn btn-xs" id="' + btnId 
+                        +'" style = "background-color: ' + color
+                        + '; color: white; font-weight:bold">' + btnMsg + '</button>';
+				/* 2018-08-20 */
+				/* 이승호 주석 처리*/
+				/**
+				*	이부분 (ready)가 없으면 버튼 이벤트가 안먹힘..
+				* 	나중에 알아 볼것.
+				**/
+				$(document).ready(function(){
+    				$('#' + btnId).click(function(){
+                        if(row.status == 1){ //진행중 버튼 눌릴때만
+                            location.href = '/scan/realtime?id='+row.id;
+                        }else if(row.status == 0){ //시작 버튼 눌릴때만
+                            location.href = '/scan/realtime?id='+row.id;
+                        }else {
+                            location.href = '/scan/detail?id='+row.id;
+                        }   
+                    });
+				});
+				return result;
+			}	
+		};
+		//메인화면 테스트 테이블 버튼들
+		function formatterTestResult(value, row, index, field) {
+			if (field == "result") {				
+				result = "";
+				var btnId = "btnTestResult" + row.id;
+				var btnMsg = "";
+                var color = "";
+
+				if(row.status == 0){ //시작
+                    btnMsg = "시작";
+                    color = "#5bc0de";
+                }else if(row.status == 1){ //진행
+                    btnMsg = "진행";
+                    color = "#E2B636";
+                }else if(row.status == 2){ //완료
+                	btnMsg = "완료";
+                    color = "#2068DF";
+                }else if(row.status == 3){ //실패
+                    btnMsg = "실패";
+                    color = "#c9302c";
+                }else if(row.status == 4){ //중지
+                    btnMsg = "중지";
+                    color = "#c9302c";
+                }
+				// result = '<button class="btn ' + btnClass + ' btn-xs" id="' + btnId +'">' + btnMsg + '</button>';
+				result = '<button class="btn btn-xs" id="' + btnId 
+                        +'" style = "background-color: ' + color
+                        + '; color: white; font-weight:bold">' + btnMsg + '</button>';
+				/* 2018-08-20 */
+				/* 이승호 주석 처리*/
+				/**
+				*	이부분 (ready)가 없으면 버튼 이벤트가 안먹힘..
+				* 	나중에 알아 볼것.
+				**/
+				$(document).ready(function(){
+    				$('#' + btnId).click(function(){
+                        if(row.status == 1){ //진행중 버튼 눌릴때만
+                            location.href = '/packet/realtime?id='+row.id;
+                        }else if(row.status == 0){ //시작 버튼 눌릴때만
+                            location.href = '/packet/realtime?id='+row.id;
+                        }else {
+                            location.href = '/packet/detail?id='+row.id;
+                        }   
+                    });
+				});
+				return result;
+			}
+		};
+	</script>
+</body>
+</div>
+
+
+<!-- <script type="text/javascript">
+	$('#btnVulnerability').on('click', function() {
+		location.href = "/scan/detail";
+		// alert('취약성 눌림');
+	});
+</script> -->
+<!-- bottom(하단처리) -->
+<% include ./common/bottom.ejs %>
+
+</html>

@@ -1,0 +1,329 @@
+<html>
+
+<head>
+    <title>패킷 설정</title>
+    <% include ../common/header.ejs %>
+    <script src="/js/bootstrap-checkbox.js"></script>
+    <script src="/js/code.js"></script>
+    <style>
+        .slow .toggle-group { transition: left 0.7s; -webkit-transition: left 0.7s; }
+	.fast .toggle-group { transition: left 0.1s; -webkit-transition: left 0.1s; }
+	.quick .toggle-group { transition: none; -webkit-transition: none; }
+	.middle {
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center; 
+	}
+	.switch {
+		position: relative;
+		/*display: block;*/
+		vertical-align: top;
+		width: 80px;
+		height: 20px;
+		padding: 0px;
+		margin: 0 3px 3px 0;
+		background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
+		background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
+		border-radius: 18px;
+		box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		cursor: pointer;
+		box-sizing:content-box;
+	}
+	.switch-input {
+		position: absolute;
+		top: 0;
+		left: 0;
+		opacity: 0;
+		box-sizing:content-box;
+	}
+	.switch-label {
+		position: relative;
+		display: block;
+		height: 25px;
+		font-size: 10px;
+		text-transform: uppercase;
+		background: #eceeef;
+		border-radius: inherit;
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+		box-sizing:content-box;
+	}
+	.switch-label:before, .switch-label:after {
+		position: absolute;
+		top: 50%;
+		margin-top: -.5em;
+		line-height: 1;
+		-webkit-transition: inherit;
+		-moz-transition: inherit;
+		-o-transition: inherit;
+		transition: inherit;
+		box-sizing:content-box;
+	}
+	.switch-label:before {
+		content: attr(data-off);
+		right: 11px;
+		color: #aaaaaa;
+		text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+	}
+	.switch-label:after {
+		content: attr(data-on);
+		left: 11px;
+		color: #FFFFFF;
+		text-shadow: 0 1px rgba(0, 0, 0, 0.2);
+		opacity: 0;
+	}
+	.switch-input:checked ~ .switch-label {
+		background: #E1B42B;
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+	}
+	.switch-input:checked ~ .switch-label:before {
+		opacity: 0;
+	}
+	.switch-input:checked ~ .switch-label:after {
+		opacity: 1;
+	}
+	/* 하얀색 공모양 스타일 */
+	.switch-handle {
+		position: absolute;
+		top: 0.45px;
+		left: 4px;
+		width: 28px;
+		height: 24px;
+		background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
+		background-image: -webkit-linear-gradient(top, #FFFFFF 40%, #f0f0f0);
+		border-radius: 100%;
+		box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+	}
+	.switch-handle:before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin: -6px 0 0 -6px;
+		width: 12px;
+		height: 12px;
+		background: linear-gradient(to bottom, #eeeeee, #FFFFFF);
+		background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF);
+		border-radius: 6px;
+		box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
+	}
+	/* 흰색공 위치 조절 (on 일때의 위치) */
+	.switch-input:checked ~ .switch-handle {
+		left: 51px;
+		box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
+	}
+	/* Transition 하얀색 공 모양 애니메이션 효과 주기
+	========================== */
+	.switch-label, .switch-handle {
+		transition: All 0.3s ease;
+		-webkit-transition: All 0.3s ease;
+		-moz-transition: All 0.3s ease;
+		-o-transition: All 0.3s ease;
+	}
+	.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+		padding: 5px;
+	}
+</style>
+</head>
+
+<body class="demo3">
+    <!-- menu -->
+    <% include ../common/menu.ejs %>
+    <!--b  ody -->
+    <div id="container">
+        <div class="subtitle form-group form-group-sm">
+            <label class="col-sm-3 control-label" style="height:20px;" id="navigation">패킷 설정</label>
+            <div class="col-sm-9">
+                <div class="col-sm-2">
+                </div>
+                <div class="col-sm-3">
+                </div>
+                <div class="col-sm-3">
+                    <select id="search_select" class="form-control" style="width:110px;" onchange="setValues();">
+                        <option value="packetName" id="packetNameTest">패킷명</option>
+                        <option value="category" id="categoryTest">카테고리</option>
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" id="search" placeholder="Search" class="form-control" style="width:120px;">
+                    <select id="category_select" class="form-control" style="width:110px; display: none;" onchange="setValues();">
+                    </select>
+                </div>
+                <div class="col-sm-1">
+                    <button type="button" id="btnSearch" class="btn btn-info btn-sm" style="margin-left: -13px; height: 30px;"><span id="searchimg" class="glyphicon glyphicon-search"></span></button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered table-striped table-customized" id="list" data-toolbar="#toolbar" data-toggle="table" border="1" style="text-align: center;" data-query-params="queryParams" data-url="/config/packet/setting" data-pagination="true" data-page-size="7" data-page-list="[5, 7, 10]">
+            <thead>
+                <tr class="center">
+                    <th data-field="identy" data-width="185">
+                        패킷명
+                    </th>
+                    <th data-field="category" data-formatter="formatterCategory" data-width="90">
+                        카테고리
+                    </th>
+                    <th data-field="used" data-formatter="formatterUsed" data-width="50">
+                        사용 여부
+                    </th>
+                    <th data-field="udate" data-width="90">
+                        수정일시
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <!--패킷설정 실패 모달 팝업-->
+    <div class="modal fade" id="packet_fail" style="color:black;"> 
+        <div class="modal-dialog modal-sm" style="width: 320px;">
+            <div class="modal-content">
+                <h4 class="modal-title" align="center" >
+                    <label class="control-label" style="height:20px; font-size: 13px; padding-top: 10px;" id="modalTitle">변경 실패</label>
+                </h4>
+                <div class="modal-body" >
+					<div class="col-sm-12"><span id="fail">메시지를 넣으세요.</span></div>
+                </div>
+				<div class="modal-bottom" align="right" style="padding: 5px;">
+                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" id='btnCancel'>닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<!-- bottom(하단처리) -->
+<% include ../common/bottom.ejs %>
+<script type="text/javascript">
+    var $table = $('#list');
+    // 이벤트 선언
+    $(function() {
+        $('#btnSearch').on('click', function() {
+            $table.bootstrapTable('refresh', {
+                silent: true
+            });
+        });
+        //카테고리 추가 하기
+        for (var i = 1; i < category.length; i++) {
+            category_option = category[i];
+            $("#category_select").append('<option value=' + i + '>' + category_option + '</option>');
+        }
+        //패킷설정 실패 모달에서의 닫기 버튼
+        $("#btnCancel").click(function() {
+        	// 아무것도 안해도 된다.
+        });
+    });
+
+    function setValues() {
+        var option = document.getElementById("search_select");
+        var optionID = option.options[option.selectedIndex].id;
+
+        var display ="";
+        var category_display = "";        
+
+        if (optionID == "categoryTest") {
+            display = "none";
+            category_display = "inline";
+            
+        } else if(optionID == "packetNameTest"){
+            display = "inline";
+            category_display = "none";
+        }
+        $('#search').css("display", display);
+        $('#category_select').css("display", category_display);
+    }
+    //사용여부 포메터
+    function formatterUsed(value, row, index, field) {
+        if (field == "used") {
+            // result =  '<label class="switch">'
+            //      + '<input type="checkbox" id="test_' + row.identy + '">'
+            //      + '<span class="slider round"></span>'
+            //      + '</label>'
+            //      + '<span id = "testMsg' + row.id + '"></span>';
+            result = '<button onclick="goPacket(\'' + row.filename + '\');" class="btn btn-success btn-sm" style="padding:2px;">TEST</button>&nbsp;&nbsp;<label class="switch">' +
+                '<input class="switch-input" type="checkbox" id="test_' + row.id + '"/>' +
+                '<span class="switch-label" data-on="On" data-off="Off"></span>' +
+                '<span class="switch-handle"></span>' +
+                '</label>';
+            $(document).ready(function() {
+                /* 2018-09-10 주석 처리 - 이승호
+                 ** ready 부분은 본래 이런식으로 작성 하지 않는다.
+                 ** node.js의 버그? 결함?? 비동기식?? 때문에 문제가 생겨 이부분을 안쓰면 아래 로직을 안탄다
+                 ** 다른 프로젝트 할때는 이렇게 작성하지 말것.
+                 */
+                var check = $('input:checkbox[id="test_' + row.id + '"]');
+                var id = row.id;
+                var identy = row.identy;
+                var rowIndex = row.yn_used;
+                if (rowIndex == 1) {
+                    $('#testMsg' + row.id).html('On');
+                    check.attr("checked", true);
+                } else if (rowIndex == 0) {
+                    $('#testMsg' + row.id).html('Off');
+                    check.attr("checked", false);
+                }
+                check.click(function() {
+                    //status 버튼 상태를 나타낸다 (클릭여부)
+                    var status = check.is(":checked")
+                    var index = '';
+                    var identy = row.identy;
+                    if (status == true) {
+                        index = 1;
+                    } else if (status == false) {
+                        index = 0;
+                    }
+                    if (index == 1) {
+                        $('#testMsg' + row.id).html('On');
+                    } else if (index == 0) {
+                        $('#testMsg' + row.id).html('Off');
+                    }
+                    $.post("/config/packet/setting/status", {
+                        index: index,
+                        identy: identy,
+                        id: id
+                    }, function(data) {
+                        if (data.success == 1) {
+                            console.log("스캔설정 변경 성공");
+                        } else {
+                        	$("#modalTitle").html("변경 실패");
+                            $('#fail').html(data.msg);
+                            $('#packet_fail').modal('show');
+                        }
+                    })
+                });
+            });
+        }
+        return result;
+    };
+    //카테고리 포메터
+    function formatterCategory(value, row, index, field) {
+        result = category[value];
+        return result;
+
+    }
+    //초기화면 셋팅 하기(검색어 입력 부분)
+    function queryParams(params) {
+        params.search = $("#search").val(); //검색어 입력 값
+        params.search_select = $("#search_select").val(); //옵션 선택 값
+
+        params.category_select = $("#category_select").val(); //옵션 선택 값
+
+        return params;
+    }
+    
+    function goPacket(filename){
+        $.post("/config/packet/test", {
+            filename: filename
+        }, function(data) {
+        	$("#modalTitle").html("패킷 전송");
+            if (data.success === 0) {
+                $('#fail').html(data.msg);
+                $('#packet_fail').modal('show');
+            } else {
+                $('#fail').html("패킷을 전송하였습니다." + data.msg);
+                $('#packet_fail').modal('show');
+            }
+        })
+    }
+</script>
+
+</html>

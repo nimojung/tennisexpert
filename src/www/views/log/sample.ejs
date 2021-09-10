@@ -1,0 +1,88 @@
+<html>
+  <head>
+	<title><%= title %></title>
+    <% include ../common/header.ejs %>
+    <script>
+    	$(document).ready(function(){
+	//	selectData();
+		initData();
+	});
+
+	function selectData(){
+		var result = <%- JSON.stringify(data) %>;
+		var output = "<tbody>";
+		for(var i=0; i<result.length; i++){
+			output += "<tr>";	
+			output += "<td>" + i + "</td>";	
+			output += "<td>" + result[i].filename + "</td>";	
+			output += "<td>" + result[i].size + "</td>";	
+			output += "</tr>";
+		}
+		output += "</tbody>";
+		$("#list").append(output);
+	};
+
+	function totalFormatter(data){
+		var total = 0;
+		if (data > 0){
+			return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+
+		return data;
+	};
+
+	function initData(){
+		var result = <%- JSON.stringify(data) %>;
+		$('#list').bootstrapTable("showLoading");
+		$('#list').bootstrapTable({
+			columns: [{
+				field: 'num',
+				title: 'Number'
+			},{
+				field: 'filename',
+				title: 'FileName'
+			},{
+				field: 'size',
+				title: 'Size',
+				formatter: totalFormatter,
+				align: 'right'
+			}],
+			data: result,
+			formatLoadingMessage: function(){
+				return 'Loading!!!!!';
+			}
+		});
+
+		$('#list').bootstrapTable("hideLoading");
+	}
+
+	function addData(){
+		var result = <%- JSON.stringify(data) %>;
+		$('#list').bootstrapTable('append', result);
+		$('#list').bootstrapTable('scrollTo', 'bottom');
+	}
+
+	$(function(){
+		
+		$('#list').on('click-row.bs.table', function(e, row, $element){
+			alert(row.filename);
+		});
+	});
+    </script>
+  </head>
+  <body class="demo3">
+  	<!-- menu -->
+  	<% include ../common/menu.ejs %>
+  	<!--body -->
+  	<div id="container">
+  		 <h1>Fie List!</h1>
+	    <div class="col-md-3">
+	    	<table class="table" id="list">
+		</table>
+	    </div>
+  		 <input type="button" value="Add" onclick="addData()">
+  	</div>
+  </body>
+  <!-- bottom(하단처리) -->
+  <% include ../common/bottom.ejs %>
+</html>

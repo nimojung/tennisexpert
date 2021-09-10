@@ -1,0 +1,91 @@
+		<div id="status">
+			<div class="row no-padding">
+				<div class="col-sm-6 " style="height:100px;">
+					<table class="table table-bordered  table-striped table-customized" 
+						id="status_table">
+						<tbody>
+							<tr>
+								<th>방화벽</th>
+									<td><span id="firewall_count">0</span></td>
+							</tr>
+							<tr>
+								<th>침입탐지</th>
+									<td><span id="ips_count">0</span></td>
+							</tr>
+							<tr>
+							<th>이상징후</th>
+								<td><span id="abnormal_count">0</span></td>
+							</tr>
+						</tbody>				
+					</table>
+				</div>
+				<div class="col-sm-6 dash-fill">
+					<span id="status_img"></span>&nbsp;&nbsp;<span id="status_level" style="height:90px; font-size:30px;padding-top:30px;"></span> 
+				</div>
+			</div>
+			<div class="row no-padding " style="height:25px; text-align:center; "><span id="status_msg" style="height:20px; font-size:12px;"></span></div>
+		</div>
+		<script>	  	
+			var $img =  $('#status_img'), $level = $('#status_level'), $msg = $('#status_msg');
+			function numberFormatter(data){
+				var total = 0;
+				if (data > 0){
+					return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				}
+				return data;
+			};
+			
+			$(function(){
+				reloadStatus();
+				// 30초 주기로 
+				setInterval(reloadStatus, 30000);
+			});
+			function reloadStatus(){
+				$.get('/etc/status', function(data){
+					$('#firewall_count').html(numberFormatter(data.firewall_count));
+					$('#ips_count').html(numberFormatter(data.ips_count));
+					$('#abnormal_count').html(numberFormatter(data.abnormal_count));
+					
+					if(data.ips_status == 0){
+						$msg.attr("style", "height:20px; font-size:12px; font-weight:bold; color:#d9534f");
+						$msg.html("침입탐지 엔진이 정상적으로 구동되고 있지 않습니다.");
+					}else if(data.ips_status == 1){
+						$msg.attr("style", "height:20px; font-size:12px;");
+						$msg.html("정상적으로 구동되고 있습니다.");
+					}else{
+						$msg.attr("style", "height:20px; font-size:12px; font-weight:bold;");
+						$msg.html("");
+					}
+					
+					// info, warning, danger
+					// 3(1, 2, 3) 단계로 구성 (양호, 경고, 위험)
+					// #5bc0de, #f0ad4e, #d9534f
+					var level_steps = ["양호", "경고", "위험"];
+					var levels = ["label-info", "label-warning", "label-danger"];
+					var colors = ["#5bc0de", "#f0ad4e", "#d9534f"];
+					var imgs = ["glyphicon-eye-open", "glyphicon-eye-close", "glyphicon-fire"];
+					var level = 1, level_index = 0;
+					level = data.level;
+					switch(level){
+						case 1 : 
+							level_index = 0;
+							break;
+						case 2 :
+							level_index = 1;
+							break;
+						case 3 :
+							level_index = 2;
+							break;
+						default :
+							level_index = 0;
+							break;
+					}
+					var level_color = colors[level_index], level_img = imgs[level_index], level_class = levels[level_index], level_html = level_steps[level_index];
+					
+					$img.attr("class", "glyphicon " + level_img);
+					$img.attr("style", "height:90px; font-size:80px; color:" + level_color + ";");					
+					$level.attr("class", "label " + level_class);
+					$level.html(level_html);
+				});
+			}
+		</script>

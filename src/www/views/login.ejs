@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>     
+<html>     
+<head>     
+	<title><%= title %></title>     
+	<% include ./common/header.ejs %>
+	<!-- Custom styles for this template -->     
+	<!--Json데이터 처리 부분-->     
+
+	<script>     
+
+		var failCount = 0;    
+		var retry = '';   
+		var inVar = 0; // setInterval의 핸들러
+		var time_count = 0; // 300초 확인하는 변수 
+		function login() {     
+			if(failCount > 2){
+				$('#lbl2').css('display', 'inline');
+				$('#lbl1').css('display','none');
+				$('#lbl3').css('display', 'none');
+				$('#myLargeModal').modal('show');
+				$('#retry').text("더 이상 로그인을 할 수 없습니다.");
+				return;    
+			}
+
+			var pw = $('#pw').val();
+			//"오류창 띄우는 모달"  
+			if(pw.length ==  0){
+				
+				$('#MyModal').modal('show'); 
+				
+				return false;
+			}
+
+			//pw를 base64encoding으로 넘기기
+			var enc_pw = btoa(pw);
+			//console.log(enc_pw, atob(enc_pw));
+			
+			var querystring = '/login_check';    
+			$.post(     
+				querystring,
+
+				{pw: enc_pw, failCount:failCount+1}, 
+
+				
+				function(data) {     
+					console.log(data.result);    
+					
+					if(data.result == 1){    
+						<% if((refer_url == "") || (refer_url == "/login")){%>
+						location.href = "/";
+						<%}else{%>
+						var url = "<%= refer_url %>";
+						if(url == ""){
+							location.href = "/";
+						}else{
+							location.href = url;
+						}
+						<%}%>					
+					}else if(data.result == 0){ 
+						failCount++;						
+						$('#lbl2').css('display', 'none');
+						$('#failCount').text(failCount);
+						$('#myLargeModal').modal('show'); 
+
+						if(failCount > 2){
+							// Timer 구동
+							if(inVar == 0){
+								inVar = setInterval(checkCount, 1000);
+								console.log("timer start");
+							}
+						}
+
+					} 
+
+				});     
+		};   
+
+
+		function checkCount(){
+			time_count++;
+			var remain = 300;
+			if(time_count > remain){
+				if(inVar > 0){
+					// Timer 중지 및 변수 초기화
+					console.log("timer stop");
+					
+					clearInterval(inVar);
+					inVar = 0;
+					failCount = 0;
+					time_count = 0;
+
+					$('#myLargeModal').modal('hide');
+				}
+			}
+			var seconds = remain - time_count;
+			var minutes = Math.round((seconds - 30)/60);
+			var remainingSeconds = seconds % 60;
+			if(remainingSeconds < 10){
+				remainingSeconds = "0" + remainingSeconds;
+			}
+			$('#remainTime').text(minutes + ":" + remainingSeconds);
+						//console.log(time_count);
+					}
+
+
+				</script> 
+
+				<style>
+				html, body {
+
+					height: 100%;
+				}
+				
+				.fill { 
+					min-height: 100%;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+				}
+
+			</style>
+
+			<body>   
+				<div class="container fill">
+					<div>
+						<h1 style="text-align:center; font-family: Montserrat; font-weight: bold;"><span class="glyphicon glyphicon-grain"></span> C&BIS</h1>
+						<h1 style="text-align:center; font-size:12px;  font-family: Montserrat; font-weight: bold;">Automotive Security Gateway</h1>
+						<input type="password" id="pw" class="container-fluid" placeholder="Password" style="width: 200px; margin-top: 10px; margin-bottom: 10px"> 
+						<button class="btn btn-primary btn-block" onclick='login()' style="width: 200px;" ><span class="glyphicon glyphicon-log-in"></span> Login</button>
+					</div>         
+				</div>
+
+				<div class="modal fade" id="myLargeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="color:black;">
+					<div class="modal-dialog modal-sm" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4>로그인</h4>
+							</div>
+							<div class="modal-body">
+
+								<h6 class="modal-title" id="lbl1"><label id="failCount"></label>회 실패하였습니다.</h6>
+								<h6 class="modal-title" id="lbl2"><label id="retry" style="color:red;"></label><br>재시도까지 <label id="remainTime"></label> 남았습니다.</h6>
+								<h6 class="modal-title" id="lbl3" style="color:red;">로그인 3회 실패 시, 5분 동안 로그인을 할 수 없습니다.</h6>         
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default btn-sm " data-dismiss="modal">닫기</button>
+							</div> 
+						</div>
+					</div>
+				</div>
+
+				<!--딜렉트 모달 팝업-->
+				<div class="modal fade" id="MyModal" style="color:black;"> 
+					<div class="modal-dialog modal-sm">
+						<div class="modal-content">
+
+							<div class="modal-body" >
+								비밀번호를 다시 입력해주세요.
+							</div>
+
+							<div class="modal-body" style="height: 50px;" align="right">
+								<button class="btn btn-primary btn-sm" data-dismiss="modal" aria-label="Close" id='btnDelete' style="margin-left: 3px;" >닫기</button>
+								
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+			</body>     
+			<!-- bottom(하단처리) -->     
+			<% include ./common/bottom.ejs %>     
+
+			</html>

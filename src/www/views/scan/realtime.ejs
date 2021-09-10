@@ -1,0 +1,451 @@
+<html>
+<head>
+	<title>스캔 실시간 보기</title>
+	<% include ../common/header.ejs %>
+	<script src="/js/code.js"></script>
+	<script src="/js/plugin.js"></script>
+	<!-- % 새로찾은것 실행을 위해 추가 -->
+	<script src="/js/jquery.color.min.js"></script>
+	<script src="/js/jquery.animateNumber.min.js"></script>
+	<!-- 여기까지가 새롭게 찾은거 -->
+	<link rel="stylesheet" type="text/css" href="/css/plugin.css">
+</head>
+<style>
+	// bootstrap table td padding
+	table > tbody > tr > td{
+		padding: 5px !important;
+	}
+	[data-name="md-Padding"] table {
+		table-layout: fixed;
+		width: 100%; /* must have this set */
+	}
+	[data-name="md-Padding"] td {
+		padding:5px !important;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	
+	/* 콘솔 테스트 */
+	.terminal_window {
+		margin: 0 auto;
+		width: 350px;
+		height: 200px;
+		text-align: left;
+		position: relative;
+		border-radius: 10px;
+	}
+	.terminal_window header {
+		background-color: #E0E8F0;
+		height: 30px;
+		border-radius: 8px 8px 0 0;
+		padding-left: 10px;
+	}
+	.terminal_window {
+		background-color: #0D1F2D;
+		color: #F4FAFF;
+		font-size: 11pt;
+	}
+	
+	.no_padding {
+		 padding: 0px;
+	}
+</style>
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	<div id="container">
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-2 control-label" style="height:20px; font-size: 12px;" id="navigation">실시간 보기</label>
+			<div class="col-sm-9">
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-1">
+				</div>
+				<form role="form">
+				</form>
+				<div class="col-sm-3" style="padding-left: 0px;">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-6 scan-file" data-name="md-Padding">
+		<table class="table table-bordered table-striped table-customized" id="list" data-toggle="table" data-url="/scan/detail/slaveList?id=<%=id%>">
+			<thead>
+				<tr class="center">
+					<th data-field="identy" data-width="100">
+						스캔명
+					</th>
+					<th data-field="flag" data-formatter="formatter_flag">
+						분류
+					</th>
+					<th data-field="yn_used" data-formatter="formatter">
+						상태
+					</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	<div class="col-sm-6" style="height: 100px;">
+		<div class="form-group form-group-sm col-sm-6">
+			<label class="control-label">이름</label>
+			<input type="text" class="form-control" id="name" disabled>
+			<label class="control-label">IP 주소 </label>
+			<input type="text" class="form-control" id="ip" disabled>
+			<button class=" btn btn-danger btn-lg" id="btnStop" style="width:100px; border:0; margin-top: 10px;"><span id="stopTest"></span></button>
+		</div>
+		<div class="col-sm-6" style="background-color:#F4F4F4; border-radius: 10px; padding-bottom: 5px;">
+			<div class="col-sm-12"  style="padding: 0px;">
+				<p id="ten" style="color: black; font-size: 50px; text-align:center;">0</p><div style="position:absolute; right:20px; top:35px;">%</div>
+			</div>
+			<div class="col-sm-12"  style="padding: 0px;">
+				<div class="col-sm-4" style="padding: 0px; text-align:left;">전체</div><div class="col-sm-8" style="padding: 0px;text-align:right;"><span id="ing1"></span></div>
+			</div>
+			<div class="col-sm-12"  style="padding: 0px; padding-top: 10px; font-size:13px;">
+				시작/진행/완료/실패/중지
+			</div>
+			<div class="col-sm-12"  style="padding: 0px;">
+				<div class="col-sm-4" style="padding: 0px; text-align:left;">&nbsp;</div><div class="col-sm-8" style="padding: 0px;text-align:right;"><span id="ing2"></span></div>
+			</div>
+		</div>
+		<div class="col-sm-12" style="width: 100%;">
+			<!-- 터미널 박스 -->
+			<div class="terminal_window">
+				<pre style="white-space: pre-wrap; overflow: auto; max-height: 200px; color:lightgreen; background:#0D1F2D; border:0 solid black; text-align:left;"><code id="tailText"></code></pre>
+			</div>
+		</div>
+		<!-- 테이블 클릭 했을때 모달 (스캔 점검하기 상세 정보) -->
+		<div class="modal fade" id="TestModal" style="color:black;">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<h4 class="modal-title" align="center">
+						<label class="control-label" style="font-size: 13px; padding-top: 10px;">
+						상세정보 </label>
+					</h4>
+					<div class="modal-body">
+						<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">		
+							<div class="col-sm-4 no_padding">스캔명</div>				
+							<div class="col-sm-8 no_padding"><span id="scan"></span></div>
+						</div>
+						<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">
+							<div class="col-sm-4 no_padding">진행상태</div>				
+							<div class="col-sm-8 no_padding"><span id="status"></span></div>
+						</div>
+						<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">
+							<div class="col-sm-4 no_padding">결과</div>
+							<div class="col-sm-8 no_padding"><span id="result"></span></div>
+						</div>
+					</div>
+					<div class="modal-bottom" align="right" style="padding:5px;">
+						<button type="button" class="btn btn-info btn-sm" id='btnResult'>상세내용</button>
+						<button type="button" class="btn btn-default btn-sm" data-dismiss="modal" id='btnCancel'>닫기</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--상세내용 모달 팝업-->
+		<div class="modal fade" id="detail_modal" style="color:black;"> 
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">×</button>
+						<h4 class="modal-title">결과 전체 내용</h4>
+					</div>
+					<div class="modal-body" >
+						<p>
+						</p>
+						<span id="tailText2"></span>						
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+			<script type="text/javascript">
+				var inStatus = 0;
+				var inVar = 0;
+				var id = '<%= id%>';
+				var $table = $('#list');
+				var decimal_places = 1;
+				var decimal_factor = decimal_places === 0 ? 1 : decimal_places * 10;
+				var identy_id ="";
+				var prePercent = 0;
+				var identy_ing = "";
+			// event 선언
+			$(function() {
+				$table.on('click-row.bs.table', function(e, row, $element) {
+					identy_id = row.identy;
+					$('#TestModal').modal('show');
+					setData([row]);
+				});				
+
+				$('#btnResult').on('click', function() {
+					$.get('/scan/detail/slaveList/stdout?id=<%= id%>&identy_id='+identy_id, function(data){
+						var stdout = data.replace(/(\n|\r\n)/g, '<br>'); //나중에 받은 규칙에 따라 
+						$("#tailText2").html("<pre id='pre' style='white-space: pre-wrap; overflow: auto; max-height: 170px; color:black; background:white; transparent;border:0 solid black;text-align:left;'><code>" + stdout + "</code></pre>");
+						$('#tailText2').scrollTop($('#pre').prop("scrollHeight") );
+						
+						$('#detail_modal').modal('show');
+					});
+				});
+			});
+
+			$("#list").on('load-success.bs.table', function (e, data) {
+				getStatistics(data);
+				setData(data);
+			});
+			
+			$(document).ready(function(){
+				if(id == ""){
+					alert("현재 데이터가 없습니다.");
+					window.location.href = "/scan/control";
+					return;
+				}
+				var stop = 0; 
+				$('#btnStop').on('click', function() {
+					if(inStatus < 2){                           
+						$.post("/scan/config/stop",{
+							id: id,
+							status: '4'
+						}, function(data){
+							if(data.changes == "1"){
+								getTotal();
+							}else{                         
+								alert('실패');
+							}
+						});
+					}else{
+						location.href = '/scan/detail?id='+id;
+					}
+				});
+			});
+		function getControlConfig(){ //역활 : 
+			var msgTest = "중지";
+			var valueTest = "";
+			$.get('/scan/config/controlconfig?id=<%= id%>', function(data){
+				if(data.length > 0){                    
+					$('#name').val(data[0].name);
+					$('#ip').val(data[0].ip);                   
+					// $('#abc').val(data[0].name); 
+					inStatus = data[0].status; //상태값
+					var btnId = status; 
+					var btnClass = "";
+					if(inStatus == 1){//상태값에 따라 버튼이 바뀜
+						msgTest = '중지';
+						$('#btnStop').css("background-color", "#FF0000");
+					}else if(inStatus >= 2){
+						msgTest ='결과';
+						$('#btnStop').css("background-color", "#009900");
+						clearInterval(inVar); //결과 버튼이 바뀌고 나서 리플레쉬가 되지 않음
+						identy_ing = "";
+					}
+					$('#stopTest').html(msgTest);                   
+				}
+			});
+		}
+
+		function getTailFile(){ // 역활: 명령어창 나오게 하기
+			$.get('/scan/config/tailfile?id=<%= id%>&identy_ing=' + identy_ing, function(data){
+				$("#tailText").html(data);
+				$('#tailText').scrollTop($('#tailText').prop("scrollHeight") );
+			});
+		}
+		// function Calculator(){
+		// 	$.get('/scan/detail/slaveList/stdout/count?id=<%= id%>', function(data){
+		// 			var prg_test = data.result2;
+		// 			var sum = prg_test[0].cnt + prg_test[0].cnt2 + prg_test[0].cnt4 + prg_test[0].cnt5;
+		// 			var total_number = prg_test[0].cnt3 + sum;
+		// 			var percent ='';
+
+		// 		percent = Math.round(prg_test[0].cnt3 / total_number * 100);
+
+		// 		//완료된것(상태 2) / 싹다 합친거 * 100
+		// 		console.log('//////////////////');
+		// 		console.log('상태값 0 시작 => ' + prg_test[0].cnt);
+		// 		console.log('상태값 1 진행 => ' + prg_test[0].cnt2);
+		// 		console.log('상태값 2 완료 => ' + prg_test[0].cnt3);
+		// 		console.log('상태값 3 실패 => ' + prg_test[0].cnt4);
+		// 		console.log('상태값 4 중지 => ' + prg_test[0].cnt5);
+		// 		console.log('싹다 더한것 => ' + total_number);
+		// 		console.log('//////////////////');
+
+		// 		$('#ten')
+		// 		.prop('number', 0)
+		// 		.animateNumber({
+		// 			number: percent
+		// 		},100
+		// 		);
+		// 	});
+		// }
+			function getStatistics(data){ //역할 : 퍼센트
+				var cnt_test_0 = 0,
+				cnt_test_2 = 0,
+				cnt_test_1 = 0,
+				cnt_test_3 = 0,
+				cnt_test_4 = 0;				
+				var sum = data.length;
+				for (var i = 0; i < data.length; i++) {
+					if(data[i].status == 0){
+						cnt_test_0 += 1;
+					}
+					if(data[i].status == 1){
+						cnt_test_1 += 1;
+					}
+					if(data[i].status == 2){
+						cnt_test_2 += 1;
+					}
+					if(data[i].status == 3){
+						cnt_test_3 += 1;
+					}
+					if(data[i].status == 4){
+						cnt_test_4 += 1;
+					}
+				}
+				var calculation = cnt_test_2 + cnt_test_3 + cnt_test_4;
+				$('#ing1').html(numberFormatter(calculation) + "/" + numberFormatter(sum));
+				$('#ing2').html(numberFormatter(cnt_test_0) + "/" + numberFormatter(cnt_test_1) + "/" + numberFormatter(cnt_test_2) + "/" + numberFormatter(cnt_test_3) + "/" + numberFormatter(cnt_test_4));
+				
+				var percent = 0;
+				var color = '#000000';
+				if (sum > 0) {
+					percent = Math.round(calculation / sum * 100);
+				}
+				if(prePercent === percent){
+					// nothing...					
+				}else{
+					prePercent = percent;
+					$('#ten')
+					.prop('number', 0)
+					.animateNumber({
+						number: percent
+					},1000
+					);
+				}
+			}
+			//모달창에 텍스트 뿌려주기
+			function setData(data){
+				for(var i = 0; i < data.length; i++){
+					var row = data[i];
+					if(data[i].identy == identy_id){
+						var success_count2 = row.success_count; // 성공 횟수
+						var fail_count2 = row.fail_count; //실패 횟수
+						var try_count2 = row.try_count; //시도 횟수
+						var percent2 = Math.round(success_count2 / try_count2 * 100, -2);
+						if (success_count2 == null && try_count2 == null) {
+							fail_count2 = 0;
+							success_count2 = 0;
+							try_count2 = 0;
+							percent2 = 0;
+						}
+						var status = row.status;
+						//상태값이 1일때 진행으로 바뀌는 부분 
+						if((status == 0) && ((row.try_count > 0) || (row.cnt2 > 0))){
+							status = 1;
+						}
+						var btnMsg = "";  
+						var color = ""; 
+						if(row.status == 0){ //시작 
+							btnMsg = "시작"; 
+							color = "#5bc0de";
+						}else if(row.status == 1){ //진행 
+							btnMsg = "진행"; 
+							color = "#E2B636"; 
+						}else if(row.status == 2){ //완료 
+							btnMsg = "완료"; 
+							color = "#2068DF"; 
+						}else if(row.status == 3){ //실패 
+							btnMsg = "실패"; 
+							color = "#c9302c";
+						}else if(row.status == 4){ //중지 
+							btnMsg = "중지"; 
+							color = "#c9302c"; 
+						}
+						$('#scan').html(row.identy);
+						$('#result').html(row.results);
+						$('#status').html(btnMsg, $('#status').css("color", color));
+						break;
+					}
+				}
+			}
+			function getTotal(){
+				getControlConfig();
+				getTailFile();
+				// Calculator();
+				// getDetail();
+				$("#list").bootstrapTable('refresh', {slient:true});
+			}
+			getTotal();
+			var inVar = setInterval(getTotal, 5000);
+			
+			function setTimes(times) {
+			    var sec_num = parseInt(times, 10); // don't forget the second param
+			    var minutes = Math.floor(sec_num / 60);
+			    var seconds = sec_num - (minutes * 60);
+
+			    if (minutes < 10) {minutes = "0"+minutes;}
+			    if (seconds < 10) {seconds = "0"+seconds;}
+			    return minutes+':'+seconds;
+			}
+			
+			function formatter(value, row, index, field) {
+				var result ='';
+				if(field == "yn_used"){
+					var btnMsg = "";  
+					var color = ""; 
+					var times = "";
+					if(row.status == 0){ //시작 
+						btnMsg = "시작"; 
+						color = "#5bc0de";
+						times = " (" + setTimes(row.time1) + ")";
+					}else if(row.status == 1){ //진행 
+						btnMsg = "진행"; 
+						color = "#E2B636"; 
+						identy_ing = row.identy;
+						times = " (" + setTimes(row.time2) + ")";
+					}else if(row.status == 2){ //완료 
+						btnMsg = "완료"; 
+						color = "#2068DF"; 
+						times = " (" + setTimes(row.time1) + ")";
+					}else if(row.status == 3){ //실패 
+						btnMsg = "실패"; 
+						color = "#c9302c"; 
+						times = " (" + setTimes(row.time1) + ")";
+					}else if(row.status == 4){ //중지 
+						btnMsg = "중지"; 
+						color = "#c9302c";  
+						times = " (" + setTimes(row.time1) + ")";
+					}
+					result = '<div style="text-align:center; color: ' + color + '">' + btnMsg + times + '</div>';
+				}
+				return result;
+			};
+				
+				function formatter_flag(value, row, index, field) {
+					var result ='';
+					if(field == "flag"){
+						if(row.flag == 1){
+							result = "일반 스캐너";
+						}else if(row.flag == 2){
+							result = "웹 스캐너";
+						}else{
+							result = "3이상..";
+						}
+					}
+					return result;
+				}
+				
+				function numberFormatter(data){
+					var total = 0;
+					if (data > 0){
+						return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					}
+					return data;
+				};
+	</script>
+</html>

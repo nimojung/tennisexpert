@@ -1,0 +1,132 @@
+<html>
+  <head>
+	<title><%= title %></title>
+    <% include ../common/header.ejs %>
+	<style>
+		.slow .toggle-group { transition: left 0.7s; -webkit-transition: left 0.7s; }
+	 	.fast .toggle-group { transition: left 0.1s; -webkit-transition: left 0.1s; }
+	  	.quick .toggle-group { transition: none; -webkit-transition: none; }
+		.middle {
+			height: 30px;
+			display: flex;
+		  	justify-content: center;
+		  	align-items: center;
+		}
+    </style>
+  </head>
+  <body class="demo3">
+  	<!-- menu -->
+  	<% include ../common/menu.ejs %>
+  	<!--body -->
+  	<div id="container">
+  		<div class="subtitle form-group form-group-sm">
+  			<label class="col-sm-3 control-label" style="height:20px;" id="navigation"><%= title %></label>
+  			<div class="col-sm-9">
+  				<div class="col-sm-2">  		
+  				</div>
+  				<div class="col-sm-3">
+  				</div>
+  				<div class="col-sm-3">
+  				</div>
+  				<div class="col-sm-3">
+  				</div>
+  				<div class="col-sm-1">  				
+	  				<button type="button" id="search"  class="btn btn-info btn-sm"><span id="searchimg" class="glyphicon glyphicon-refresh"></span></button>
+  				</div>
+  			</div>
+  		</div>
+  		<div>
+  			<div class="col-sm-2 middle">
+  				SSH 서버 설정
+  			</div>
+  			<div class="col-sm-2">
+  				<input type="checkbox"  data-toggle="toggle" data-onstyle="warning" data-offstyle="info" id="ssh_value" data-size="small" data-style="slow">
+  			</div>
+  			<div class="col-sm-4">
+  			</div>
+  			<div class="col-sm-2">
+  			</div>
+  			<div class="col-sm-2">
+  			</div>
+  		</div>
+  	</div>  	
+<!-- Modal(msg)-->
+<div id="msgModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h5 class="modal-title">알림</h4>
+      </div>
+      <div class="modal-body">
+        <h6><strong><label class="modal-contents" id="msgLabel"></label></strong></h6>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+  </body>
+  <!-- bottom(하단처리) -->
+  <% include ../common/bottom.ejs %>
+    <script>
+  	var $search = $('#search'), $ssh_value = $('#ssh_value'), $modal=$('#msgModal');
+  	var $msgLabel = $('#msgLabel');
+  	var callcount = 0;
+  	const  totalcount = 0; // totalcount가 callcount보다 1 적게 설정
+  	
+  	$(function () {    		
+	  	$modal.on('show.bs.modal', function (event) {
+	  		// var modal = $(this);
+		  	// modal.find('.modal-contents ').text("처리에 실패하였습니다.");
+		});
+
+  		$search.click(function(){
+  			reload();
+  		});
+  		  		
+  		$ssh_value.change(function() {
+	    	var value = $(this).prop('checked');
+	    	if(callcount > totalcount){
+	    		var query = '/etc/ssh?flag=stop';
+	    		if(value){
+	    			query = '/etc/ssh?flag=start';
+	    		}
+	    		$.get(query, function(data){
+	    			if(data.success == "1"){
+	    			}else{
+	    				$msgLabel.text("처리에 실패하였습니다.");
+    					$modal.modal('show');
+    					// 실패 시, 재조회
+    					reload();
+	    			}
+	    		});
+	    	}
+	    })
+    });
+    
+    function getSsh(){
+    	$.get('/etc/ssh?flag=status', function(data){    		
+    		if(data.success == "1"){
+    			if(data.running == "1"){
+    				$ssh_value.bootstrapToggle('on');
+    			}else{
+    				$ssh_value.bootstrapToggle('off');
+    			}
+    		}else{
+   				$ssh_value.bootstrapToggle('off');
+    		}    		
+   			callcount++;
+  		});
+    }
+    
+    function reload(){
+    	callcount=0;
+    	getSsh();
+    }
+    
+    reload();
+  </script>
+</html>

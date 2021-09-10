@@ -1,0 +1,211 @@
+<html>
+<head>
+	<title>테스트 화면</title>
+	<% include ../common/header.ejs %>
+	<script src="/js/code.js"></script>
+	<script src="/js/jquery-ui.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/css/jquery-ui.css">
+	
+
+</head>
+<style type="text/css">
+	
+.label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 0px;
+  font-weight: bold;
+}
+
+   // bootstrap table td padding
+        table > tbody > tr > td{
+            padding: 5px !important;
+        }
+        [data-name="md-Padding"] table {
+            table-layout: fixed;
+            width: 100%; /* must have this set */
+        }
+        [data-name="md-Padding"] td {
+            padding:5px !important;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+</style>
+
+
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	
+	<div id="container">
+
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-2 control-label" style="height:20px; font-size: 12px;" id="navigation">테스트 하기</label>
+			<div class="col-sm-9">
+
+				<div class="col-sm-2"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-3"></div>
+				<div class="col-sm-1"></div>
+				<form role="form"></form>
+
+				<div class="col-sm-3" style="padding-left: 0px;">   
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-6 packet-file" data-name="md-Padding">
+		<table class="table table-bordered  table-striped table-customized"  
+		id="VulnerabilityList" 
+		data-toggle="table"  s
+		data-url="/packet/control/select">
+		<thead> 
+			<tr class="center"> 
+				<th data-field="category" data-formatter="formatter" data-width= "100">패킷분류</th> 
+				<th data-field="cnt" data-formatter="formatter" >상세정보</th>
+			</tr> 
+		</thead>                 
+	</table>
+</div>
+
+<div class="col-sm-6">  
+	<div class="form-group form-group-sm col-sm-8">
+		<label class="control-label">이름</label>
+		<input type="text" class="form-control"  style="width: 200px;" id="test_info_name" placeholder="대상 시스템명"/>
+		<label class="control-label">IP 주소 </label>
+		<input type="text" class="form-control"  style="width: 200px;" id="test_info_ip" placeholder="192.168.100.6"/>
+	</div>
+	<div class="col-sm-12"><button class="col-sm-3 btn btn-primary btn-lg" id="btnStart" style="width: 100px;"><span class="glyphicon glyphicon-play"></span>시작</button>
+	</div>
+	
+	<div class="modal fade" id="MeModal" style="color:black;"> 
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<h4 class="modal-title" align="center" >
+					<label class="control-label" style="height:20px; font-size: 13px;" >테스트 하기</label>
+				</h4>
+				<div class="modal-body">
+					<label id="lb20" style="font-size: 13px;"></label>
+					<label style="font-size: 13px;">현재 테스트중인 화면으로 넘어가시겠습니까?</label>
+				</div>
+
+				<div class="modal-body" style="height: 50px;" align="right">
+					<button class="btn btn-primary btn-sm" data-dismiss="modal" aria-label="Close" id='btnYes' style="margin-left: 3px;" >예</button>
+					<button class="btn btn-primary btn-sm" data-dismiss="modal" aria-label="Close" id='btnNo' style="margin-left: 3px;" >아니오</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+
+
+<script type="text/javascript">
+		//ip유효성 검사
+		
+		$('#btnStart').on('click', function() {
+			var test_info_name = $('#test_info_name').val(); //텍스트 입력한거 가져오기
+			var test_info_ip = $('#test_info_ip').val();
+			var chk_ip = /(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)/;
+			var test = chk_ip.test(test_info_ip);
+			var rdate = $('#rdate').val();
+			
+			if(test == false){
+				
+				return;
+			}
+			
+			try{
+				$.ajax({
+					url: '/packet/control/insert', //가져오고자하는 서버페이지 주소를 넣는다. 
+					type: 'post', //데이터를 서버로 전송하게 된다. 
+					data: {
+						test_info_name: test_info_name,
+						test_info_ip: test_info_ip,
+						rdate: rdate,
+
+						status: '0'
+					},
+					success: function(t) {
+						if(t.success == 1){  
+							if(t.status == '5'){
+								$("#MeModal").modal('show');
+								$("#lb20").text("현재 테스트를 시작 할 수 없습니다.");
+								$('#lb20').css('color','red');
+								return false;
+							}else{
+								console.log('성공', t.success, t.id);
+								location.href = "/packet/realtime?id=" + t.id;      
+							}
+							return;
+						}else{
+
+							// 실패
+						}
+					}
+				});
+			}
+			catch (e) {
+				console.log(e);
+			}
+		});
+		
+		$('#btnYes').on('click',function(){ //모달창 부분(ex:예 버튼을 눌렀을떄 실시간보기로 넘어감 )
+			$.get('/packet/config/realtime', function(data){
+				var prg = '';
+				var test_id= '';
+				for(var i=0; i<data.length; i++){
+					prg = data[i].status;
+					if(prg == '1'){
+						test_id = data[i].id;
+						console.log('진행중', test_id);
+					}
+				}
+				location.href = "/packet/realtime?"+test_id;
+			});
+		});
+
+		function formatter(value, row, index, field) {
+			var aa = row.id;
+			if(field == "cnt"){
+				var total = row.cnt;
+				var used = row.cnt2;
+				var test_value = 99.124;
+				var percent = Math.round(used / total * 100, -2);
+				var percent2 = percent + "%";
+
+				// 퍼센트가 0 ~ 20% 일때 글자색이 흰색이라 (바탕도 흰색) 잘 안보여서 추가
+				if (percent >= 0 && percent <= 20) {
+					var font_color = 'black';
+				}
+				if(percent >= 0 && percent <= 50){ 
+					 
+					var color = 'DF2020'; 
+				}else if(percent >= 51 && percent <= 80){ 
+					 
+					color = '2068DF'; 
+				}else if(percent >= 81 && percent <= 100){ 
+					color = '5C9857'; 
+				}else{ 
+
+					console.log("에러");
+				} 
+			result = '<div class="col-sm-12" style="padding:5px;"><div class="col-sm-5 progress " style="margin-bottom:0px; border:0px; padding-right:0px; padding-left:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:' + percent2 +'; background-color: ' + color + '; color: ' + font_color +';">' + percent2 + '</div></div>' + '<label style=" width: text-align:right; margin-left:10px;">사용 : ' + used + "  전체 : " + total + "</label></div>";
+			}else if(field == "category"){
+				console.log('category:', value);
+				result = category[value];
+			}
+			return result;
+		}
+
+	</script>
+
+
+</body>
+<!-- bottom(하단처리) -->
+<% include ../common/bottom.ejs %>
+</html>

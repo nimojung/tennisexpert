@@ -1,0 +1,71 @@
+		<div id="statistics">
+			<canvas id="statistics_chart" width="380" height="200"></canvas>
+		</div>
+		<script>	  	
+			$(function(){
+				reloadStatistics();
+				// 30초 주기로 
+				setInterval(reloadStatistics, 30000);
+			});			
+			function reloadStatistics(){
+				$.get('etc/statistics', function(data){
+					setStatisticChart(data);
+				});
+			}
+			
+			function setStatisticChart(json){		
+				var title = "최근 1개월";
+				var data = [], labels = [], bgcolors = [];
+				// 라벨
+				labels.push("방화벽");
+				labels.push("침입탐지");
+				labels.push("이상징후");
+				// 데이터
+				data.push(json.firewall);
+				data.push(json.ips);
+				data.push(json.abnormal);				
+				// 색상
+				bgcolors.push("#e0e0eb");
+				bgcolors.push("#ff9900");
+				bgcolors.push("#ff0000");				
+				
+				var chart_json = new Array();
+				var chart_info = new Object();
+				chart_json.type = 'horizontalBar';
+				chart_json.data = new Object();
+				chart_json.data.labels = labels;
+				var chart_data = new Array();
+				var chart_dataset = new Object();
+				chart_dataset.label = "";
+				chart_dataset.data = data;
+				chart_dataset.backgroundColor = bgcolors;
+				chart_data.push(chart_dataset);
+				chart_json.data.datasets = chart_data;
+				var chart_options = new Object();
+				chart_options.legend = new Object();
+				chart_options.legend.display = false;
+				chart_options.title = new Object();
+				chart_options.title.display = true;
+				chart_options.title.text = title;
+				chart_options.title.position = "bottom";
+				chart_options.animation = {
+						duration: 1,
+						onComplete: function(){
+							var chartInstance = this.chart,
+			                ctx = chartInstance.ctx;
+			                ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+			                ctx.textAlign = 'center';
+			                ctx.textBaseline = 'bottom';
+			                this.data.datasets.forEach(function (dataset, i) {
+			                    var meta = chartInstance.controller.getDatasetMeta(i);
+			                    meta.data.forEach(function (bar, index) {
+			                        var data = dataset.data[index];                            
+			                        ctx.fillText(data, bar._model.x + 10, bar._model.y + 10);
+			                    });
+			                });
+						}
+				}
+				chart_json.options = chart_options;
+				var myChart = new Chart($('#statistics_chart'), chart_json);
+			}
+		</script>

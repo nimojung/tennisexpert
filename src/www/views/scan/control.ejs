@@ -1,0 +1,148 @@
+<html>
+<head>
+<title>스캔 제어 화면 </title>
+<% include ../common/header.ejs %>
+<script src="/js/code.js"></script>
+</head>
+<style type="text/css">
+	 // bootstrap table td padding
+    table > tbody > tr > td{
+        padding: 5px !important;
+    	vertical-align: baseline;
+    }
+    [data-name="md-Padding"] table {
+        table-layout: fixed;
+        width: 100%; /* must have this set */
+    }
+    [data-name="md-Padding"] td {
+        padding:5px !important;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    } 
+</style>
+<body class="demo3">
+<!-- menu -->
+<% include ../common/menu.ejs %>
+<div id="container">
+    <div class="subtitle form-group form-group-sm">
+        <label class="col-sm-2 control-label" style="height:20px; font-size: 12px;" id="navigation">스캔 점검 하기</label>
+        <div class="col-sm-9">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-3"></div>
+            <div class="col-sm-1"></div>
+            <form role="form"></form>
+            <div class="col-sm-3" style="padding-left: 0px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-6 packet-file" data-name="md-Padding">
+    <table 
+    class="table table-bordered table-striped table-customized" 
+    id="VulnerabilityList" 
+    data-toggle="table" 
+    data-url="/scan/control/select">
+    <thead>
+    <tr class="center">
+        <th data-field="identy" data-width= "100">
+            <!-- <th data-field="flag" data-formatter="formatter"> -->
+             스캔명
+        </th>
+        <th data-field="flag" data-formatter="formatter_flag">
+            분류
+        </th>
+        <th data-field="yn_used" data-align="center" data-formatter="formatter">
+             사용여부
+        </th>
+    </tr>
+    </thead>
+    </table>
+</div>
+<div class="col-sm-6">
+    <div class="form-group form-group-sm col-sm-8">
+        <label class="control-label">이름</label>
+        <input type="text" class="form-control"  style="width: 200px;" id="test_info_name" placeholder="대상 시스템명"/>
+        <label class="control-label">IP 주소 </label>
+        <input type="text" class="form-control"  style="width: 200px;" id="test_info_ip" placeholder="192.168.100.6"/>
+    </div>
+    <div class="col-sm-12"><button class="col-sm-3 btn btn-primary btn-lg" id="btnStart" style="width: 100px;"><span class="glyphicon glyphicon-play"></span>시작</button>
+</div>
+
+
+<script type="text/javascript">
+        //ip유효성 검사 
+        $('#btnStart').on('click', function() {
+
+            var test_info_name = $('#test_info_name').val(); //텍스트 입력한거 가져오기
+            var test_info_ip = $('#test_info_ip').val();
+            var chk_ip = /(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)/;
+            var test = chk_ip.test(test_info_ip);
+            var rdate = $('#rdate').val();
+           
+            if(test == false){
+                
+                return;
+            }
+            try{
+                $.ajax({
+                    url: '/scan/control/insert', //가져오고자하는 서버페이지 주소를 넣는다. 
+                    type: 'post', //데이터를 서버로 전송하게 된다. 
+                    data: {
+                        test_info_name: test_info_name,
+                        test_info_ip: test_info_ip,
+                        rdate: rdate,
+                        status: '0'
+
+                    },
+                    success: function(t) {
+                        if(t.success == 1){                     
+                            location.href = "/scan/realtime?id=" + t.id;  
+                            return;
+                        }else{
+                            // 실패
+                        }
+                    }
+                });
+            }
+            catch (e){
+            }
+        });
+
+        function formatter(value, row, index, field) {
+            var result ='';
+            if(field == "yn_used"){
+                if(row.yn_used == 1){
+                    labelColor = "success";
+                    labelMsg = "ON";
+                } else if(row.yn_used == 0){
+                    labelColor = "danger";
+                    labelMsg = "OFF";
+                }                
+                result = '<label class="label label-' + labelColor + '">' + labelMsg + '</label>';        
+            }
+            return result;
+        };
+
+         function formatter_flag(value, row, index, field) {
+            var result ='';
+            if(field == "flag"){
+                if(row.flag == 1){
+                    result = "일반 스캐너";
+                }else if(row.flag == 2){
+                    result = "웹 스캐너";
+                }else{
+                    result = "3이상..";
+                }
+            }
+            return result;
+        }
+
+       
+    </script>
+</body>
+<!-- bottom(하단처리) -->
+<% include ../common/bottom.ejs %>
+</html>

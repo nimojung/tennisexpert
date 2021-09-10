@@ -1,0 +1,221 @@
+<html>
+  <head>
+	<title><%= title %></title>
+	<% include ../common/header.ejs %>
+	<script src="/js/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="/css/jquery-ui.css">
+	<style>
+		.ui-datepicker{ font-size: 12px; width: 160px; }
+		.ui-datepicker select.ui-datepicker-month{ width:30%; font-size: 11px; }
+		.ui-datepicker select.ui-datepicker-year{ width:40%; font-size: 11px; }
+	</style>
+  </head>
+  <body class="demo3">
+  	<!-- menu -->
+  	<% include ../common/menu.ejs %>
+  	<!--body -->
+  	<div id="container"> 
+  		<div class="subtitle form-group form-group-sm">
+  			<label class="col-sm-3 control-label" style="height:20px;" id="navigation"><%= title %> 로그</label>
+  			<div class="col-sm-9">
+  				<div class="col-sm-2">  		
+  				</div>
+  				<div class="col-sm-3">
+					<input type="text" id="rday" class="form-control"  style="width:110px;">
+  				</div>
+  				<div class="col-sm-3">
+	  				<select id="cname" class="form-control" style="width:110px;">
+	  					<% if((type == "firewall") | (type == "ips") | (type == "abnormal")){%>
+	  					<option value="ip">IP</ip>
+	  					<%} %>
+	  					 <%if(type == "ips"){%>
+	  					<option value="signature">탐지명</ip>
+	  					<%} %>
+	  					 <%if(type == "audit"){%>
+	  					<option value="major">분류</ip>
+	  					<option value="contents">내용</ip>
+	  					<%} %>
+	  				</select>
+  				</div>
+  				<div class="col-sm-3">
+	  				<input type="text" id="cdata" placeholder="search" class="form-control"  style="width:110px;">
+  				</div>
+  				<div class="col-sm-1">  				
+	  				<button type="button" id="search"  class="btn btn-info btn-sm"><span id="searchimg" class="glyphicon glyphicon-search"></span></button>
+  				</div>
+  			</div>
+  		</div>
+  		<table class="table table-bordered  table-striped table-customized" 
+  			id="list"
+  			data-toggle="table"	
+           data-pagination="true"
+           data-page-size="7"
+           data-page-list="[5, 7, 10]"
+           data-pagination-first-text="First"
+           data-pagination-pre-text="Previous"
+           data-pagination-next-text="Next"
+           data-pagination-last-text="Last"
+  			data-query-params="queryParams"
+			data-url="/log/search">
+  			<thead>
+	  		<% if(type == "firewall"){%>
+	  			<tr class="center">
+					<th data-field="rdate">탐지일시</th>
+					<th data-field="action">행위</th>
+					<th data-field="src_ip" data-formatter="formatter">출발지</th>
+					<th data-field="src_port">Port</th>
+					<th data-field="dst_ip" data-formatter="formatter">목적지</th>
+					<th data-field="dst_port">Port</th>
+					<th data-field="len">Len</th>
+					<th data-field="nic_in">In</th>
+					<th data-field="nic_out">Out</th>
+					<th data-field="tos">Tos</th>
+					<th data-field="prec">Prec</th>
+					<th data-field="ttl">Ttl</th>
+					<th data-field="id">Id</th>
+					<th data-field="proto" data-align="center">프로토콜</th>
+					<th data-field="res">Res</th>
+					<th data-field="urpg">Urpg</th>
+					<th data-field="window">Window</th>
+	  			</tr>
+	  		<% }else if(type == "ips"){%>
+	  			<tr>
+					<th data-field="rdate">탐지일시</th>
+					<th data-field="event_type">행위</th>
+					<th data-field="signature">탐지명</th>
+					<th data-field="src_ip" data-formatter="formatter">출발지</th>
+					<th data-field="src_port">Port</th>
+					<th data-field="dst_ip" data-formatter="formatter">목적지</th>
+					<th data-field="dst_port">Port</th>
+					<th data-field="proto" data-align="center">프로토콜</th>
+					<th data-field="action_code">Action Code</th>
+					<th data-field="gid">Gid</th>
+					<th data-field="sid">Sid</th>
+					<th data-field="rev">Rev</th>
+					<th data-field="category">Category</th>
+					<th data-field="severity">Severity</th>
+	  			</tr>
+	  		<% }else if(type == "abnormal"){%>
+	  			<tr>
+					<th data-field="rdate">탐지일시</th>
+					<th data-field="src_ip" data-formatter="formatter">출발지</th>
+					<th data-field="src_port">Port</th>
+					<th data-field="dst_ip" data-formatter="formatter">목적지</th>
+					<th data-field="dst_port">Port</th>
+					<th data-field="proto" data-align="center">프로토콜</th>
+					<th data-field="cnt" data-align="right">시도횟수</th>
+					<th data-field="sdate">Start</th>
+					<th data-field="edate">Finish</th>
+	  			</tr>
+	  		<% }else if(type == "audit"){%>
+	  			<tr>
+					<th data-field="rdate">사용일시</th>
+					<th data-field="major" data-formatter="formatter_audit">분류</th>
+					<th data-field="minor">소분류</th>
+					<th data-field="contents">내용</th>
+	  			</tr>
+	  		<% }%>
+	  		</thead>
+  		</table>
+  	</div>
+  </body>
+  <!-- bottom(하단처리) -->
+  <% include ../common/bottom.ejs %>
+    <script>
+  	var $table = $('#list'), $search = $('#search'), $cdata = $('#cdata'), $rday = $('#rday');
+  	var type = '<%= type%>';
+  	var now = new Date();
+	var rday = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0,10);
+  	
+  	$(function () {
+  		<% if(type == "firewall"){%>
+  		$table.bootstrapTable('hideColumn', 'len');
+  		$table.bootstrapTable('hideColumn', 'nic_in');
+  		$table.bootstrapTable('hideColumn', 'nic_out');
+  		$table.bootstrapTable('hideColumn', 'tos');
+  		$table.bootstrapTable('hideColumn', 'prec');
+  		$table.bootstrapTable('hideColumn', 'ttl');
+  		$table.bootstrapTable('hideColumn', 'id');
+  		$table.bootstrapTable('hideColumn', 'window');
+  		$table.bootstrapTable('hideColumn', 'res');
+  		$table.bootstrapTable('hideColumn', 'urpg');
+  		$table.bootstrapTable('hideColumn', 'src_port');
+  		$table.bootstrapTable('hideColumn', 'dst_port');
+  		<%} else if(type == "ips"){%>
+  		$table.bootstrapTable('hideColumn', 'src_port');
+  		$table.bootstrapTable('hideColumn', 'dst_port');
+  		$table.bootstrapTable('hideColumn', 'action_code');
+  		$table.bootstrapTable('hideColumn', 'gid');
+  		$table.bootstrapTable('hideColumn', 'sid');
+  		$table.bootstrapTable('hideColumn', 'rev');
+  		$table.bootstrapTable('hideColumn', 'category');
+  		$table.bootstrapTable('hideColumn', 'severity');
+  		<%} else if(type == "abnormal"){%>
+  		$table.bootstrapTable('hideColumn', 'src_port');
+  		$table.bootstrapTable('hideColumn', 'dst_port');
+  		$table.bootstrapTable('hideColumn', 'sdate');
+  		$table.bootstrapTable('hideColumn', 'edate');
+  		<%} else if(type == "audit"){%>
+  		$table.bootstrapTable('hideColumn', 'minor');
+  		<%} %>
+  		
+  		$rday.datepicker({
+  			dateFormat: 'yy-mm-dd',
+  			onSelect: function() {
+  				$table.bootstrapTable('refresh', {silent: true});
+  			}
+  		});
+  		$rday.val(rday);
+  		
+  		$search.click(function(){
+			$table.bootstrapTable('refresh', {silent: true});
+  		});  		
+
+		$cdata.keypress(function(event){
+			if(event.which == 13){
+				$table.bootstrapTable('refresh', {silent: true});
+			}
+		});
+    });
+    
+  	function queryParams(params){
+		params.type  = type;
+		params.flag = "search";
+		params.cdata = $("#cdata").val();
+		params.cname = $("#cname").val();
+		params.rday = $("#rday").val();
+		if(params.rday == ""){
+			params.rday = rday;
+		}
+		params.page = 1;
+		params.count = 100;
+		params.limit = 8192;
+		return params;
+	}
+	
+	function formatter(value, row, index, field){
+		if(field == "src_ip"){
+			if(row.src_port == ""){
+				return row.src_ip;;
+			}else{
+				return row.src_ip + ":" + row.src_port;
+			}
+		}else if(field == "dst_ip"){
+			if(row.dst_port == ""){
+				return row.dst_ip;
+			}else{
+				return row.dst_ip + ":" + row.dst_port;
+			}
+		}
+	}
+	
+	function formatter_audit(value, row, index, field){
+		if(row.minor == ""){
+			return row.major;
+		}else{
+			return row.major + " - " + row.minor;  
+		}
+	}
+	
+  </script>
+</html>

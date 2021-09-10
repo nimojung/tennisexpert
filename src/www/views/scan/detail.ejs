@@ -1,0 +1,314 @@
+﻿<html>
+<head>
+	<title><%=title %></title>
+	<% include ../common/header.ejs %>
+	<script src="/js/code.js"></script>
+	<style>
+	.slow .toggle-group { transition: left 0.7s; -webkit-transition: left 0.7s; }
+	.fast .toggle-group { transition: left 0.1s; -webkit-transition: left 0.1s; }
+	.quick .toggle-group { transition: none; -webkit-transition: none; }
+	.middle {
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	fieldset.scheduler-border {
+		border: 1px groove #ddd !important;
+		padding: 0 0.8em 0.8em 0.8em !important;
+		margin: 0 0 0.5em 0 !important;
+		-webkit-box-shadow:  0px 0px 0px 0px #000;
+		box-shadow:  0px 0px 0px 0px #000;
+	}
+
+	legend.scheduler-border {
+		width:inherit; /* Or auto */
+		padding:0 10px; /* To give a bit of padding on the left and right */
+		border-bottom:none;
+		font-size: 15px;
+	}
+
+	/* 콘솔 테스트 */
+	.terminal_window {
+		margin: 0 auto;
+		width: 360px;
+		height: 200px;
+		tex-align: left;
+		margin-top: 15px;
+		postion: relative;
+		border-radius: 10px;
+	}
+	.terminal_window header {
+		background-color: #E0E8F0;
+		height: 30px;
+		border-radius: 8px 8px 0 0;
+		padding-left: 10px;
+	}
+
+	.terminal_window {
+		background-color: #0D1F2D;
+		color: #F4FAFF;
+		font-size: 11pt;
+	}
+	.terminal_text {
+		margin-left: 20px;
+		font-family: Menlo, Monaco, "Consolas", "Courier New", "Courier";
+	}
+	#typed-strings {
+		display: inline-block;
+		postiion: relative;
+	}
+	#typed {
+		font-family: Menlo, Monaco, "Consolas", "Courier New", "Courier";
+		margin-left: 15px;
+	}
+</style>
+</head>
+
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	<!--body -->
+	<div id="container">
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-3 control-label" style="height:20px;" id="navigation"><%=titleDetail %></label>
+			<div class="col-sm-9">
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+					<button class="btn btn-primary btn-sm" id="btnBack" style="margin-left: 130px;">이전</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-12">
+			<fieldset class="scheduler-border">
+				<legend class="scheduler-border" style="height: 15px;">기본 정보</legend>
+				<div class="col-sm-12">
+					<div class="col-sm-4">
+						<label class="control-label input-label">이름 : </label>
+						<!-- <div class="controls bootstrap-timepicker"> -->
+							<input type="text" class="datetime" id="scanName" style="width: 100px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+							<!-- <i class="icon-time"></i> -->
+							<!-- </div> -->
+						</div>
+						<div class="col-sm-4">
+							<label class="control-label input-label">IP : </label>
+							<input type="text" class="datetime" id="scanIp" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+						<div class="col-sm-4">
+							<label class="control-label input-label">결과 : </label>
+							<input type="text" class="datetime" id="scanStatus" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+					</div>
+					<div class="col-sm-12" style="padding-top: 10px;">
+						<div class="col-sm-4">
+							<label class="control-label input-label">분류 : </label>
+							<input type="text" class="datetime" id="scanFlag" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+
+						<div class="col-sm-4" style="margin-left: -15px;">
+							<label class="control-label input-label">시작 : </label>
+							<input type="text" class="datetime" id="scanRdate" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+						<div class="col-sm-4" style="margin-left: 15px;">
+							<label class="control-label input-label">종료 : </label>
+							<input type="text" class="datetime" id="scanUdate" style="width: 150px; background-color:transparent;border:0 solid black;text-align:left;" disabled/>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+		<div class="col-sm-12">
+			<table class="table table-bordered table-striped table-customized"
+			id="mytable" 
+			data-toggle="table"
+			border="1" 
+			data-url="/scan/detail/slaveList?id=<%=id%>"
+			style="text-align: center;"
+			>
+			<thead>
+				<tr class="center">
+					<th data-field="category" data-width="100" data-formatter="formatterName">
+						스캔명
+					</th>
+					<th data-field="status" data-width="50" data-formatter="formatterStatus">
+						상태
+					</th>
+					<th data-field="results" data-align="left">
+						결과
+					</th>
+					<th data-field="rdate" data-width="185" data-formatter="formatterDate">
+						점검 일시
+					</th>
+					<th data-field="udate" data-width="85">
+						종료일시
+					</th>
+					<th data-field="TEST" data-width="80" data-formatter="formatterOriginal">
+						상세 결과
+					</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+<!-- <div class="col-sm-12">
+</div> -->
+</div>
+<!-- Modal -->
+<div class="modal fade" role="dialog" id="myModal">
+	<div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">×</button>
+				<h4 class="modal-title">결과 전체 내용</h4>
+			</div>
+			<div class="modal-body">
+				<p>
+				</p>
+				<span id="tailText"></span>
+			</span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+<!-- bottom(하단처리) -->
+<% include ../common/bottom.ejs %>
+<script>
+	var identy_id ="";
+	$(function(){
+		var $table = $('#mytable');
+		$table.bootstrapTable('hideColumn', 'udate');
+
+	});
+	var id = <%= id%>;
+	$('#btnBack').click(function(){
+		window.history.back();
+	});
+	//테이블에 시작 / 종료 일시
+	function formatterDate(value, row, index, field) {
+		var date = "";
+		date = "시작 : " + row.rdate +  "<br>" + "종료 : "  + row.udate;
+		return date;
+	}
+	//테이블에 원본보기 버튼
+	function formatterOriginal(value, row, index, field) {
+		var result = "";
+		var btnId = "btnScanResult" + index;
+		result = '<button class="btn btn-info btn-sm" data-toggle="modal" id="' + btnId +'" >' + "결과" + '</button>';
+		$(document).ready(function(){
+			var $btnModal = $('#'+btnId);
+			$btnModal.on('click', function() {
+				Detail([row.identy]);
+			});
+		});
+		return result;
+	}
+
+	function Detail(data2) {
+		$.get('/scan/detail/slaveList/stdout?id=<%= id%>&identy_id='+data2, function(data){
+			var stdout = "";
+			//해당 identy의 값이 존재하지 않았을때의 예외처리
+			if((data == '') || (data == null) || (data == undefined)){
+				stdout = "데이터가 존재 하지 않습니다.";
+			}else {
+				stdout = data.replace(/(\n|\r\n)/g, '<br>'); //나중에 받은 규칙에 따라 
+			}
+
+			$("#tailText").html("<pre id='pre' style='white-space: pre-wrap; overflow: auto; max-height: 170px; color:black; background:white; transparent;border:0 solid black;text-align:left;'>" + stdout + "</pre>");
+			$('#pre').scrollTop($('#pre').prop("scrollHeight") );
+		});
+		$('#myModal').modal('show');
+	}
+
+	//테이블에 스캔명 code.js 활용
+	function formatterName(value, row, index, field) {
+		var identy_values = row.identy;
+		return identy_values;
+	}
+	//상태 컬럼에 성공, 실패, 진행등의 값을 보여주고 각각의 내용마다 색상을 적용함
+	function formatterStatus(value, row, index, field) {
+		var status_values = row.status;
+		if (field == "status") {
+			result = "";
+			var btnMsg = ""; 
+			var color = "";
+
+			if(row.status == 0){ //시작
+                btnMsg = "시작";
+                color = "#5bc0de";
+            }else if(row.status == 1){ //진행
+                btnMsg = "진행";
+                color = "#E2B636";
+            }else if(row.status == 2){ //완료
+                btnMsg = "완료";
+                color = "#2068DF";
+            }else if(row.status == 3){ //실패
+                btnMsg = "실패";
+                color = "#c9302c";
+            }else if(row.status == 4){ //중지
+                btnMsg = "중지";
+                color = "#c9302c";
+            }
+		}
+		// result = '<span>' + btnMsg + '</span>' ;
+		result = '<span'+ ' style="color:' + color + '; font-weight:bold">' + btnMsg + '</span>' ;
+		return result;
+	}
+	//스캔상세 결과보기 화면에서 기본정보 표시
+	function getControlConfig(){ 
+		$.get('/scan/detail/slave?id=<%= id%>', function(data){
+			var scan_msg = ""; 
+			var flag_msg = "";
+			var scan_msg_color = "";
+			
+			for(var i = 0; i < data.length; i++){
+				//상태
+				if(data[i].status == 0){ //시작
+					scan_msg = "시작";
+					scan_msg_color = "#5bc0de";
+				}else if(data[i].status == 1){ //진행
+					scan_msg = "진행";
+					scan_msg_color = "#E2B636";
+				}else if(data[i].status == 2){ //완료
+					scan_msg = "완료";
+					scan_msg_color = "#2068DF";
+				}else if(data[i].status == 3){ //실패
+					scan_msg = "실패";
+					scan_msg_color = "#c9302c";
+				}else if(data[i].status == 4){ //중지
+					scan_msg = "중지";
+					scan_msg_color = "#c9302c";
+				}
+				//분류
+				if(data[0].flag == 1){
+					flag_msg = "패킷"
+				}else if(data[0].flag == 2){
+					flag_msg = "스캔"
+				}
+				$('#scanRdate').val(data[i].rdate);
+				$('#scanUdate').val(data[i].udate);
+				$('#scanFlag').val(flag_msg);
+				$('#scanIp').val(data[i].ip);
+				$('#scanStatus').val(scan_msg);
+				$("#scanStatus").css({"color":scan_msg_color, "font-weight":"bold"});
+				$('#scanName').val(data[i].name);
+			}
+			
+		});
+	}
+
+	function getTotal(){
+		getControlConfig();
+	}
+	//기본정보 표시를 위해 선언
+	getTotal();
+</script>
+</html>

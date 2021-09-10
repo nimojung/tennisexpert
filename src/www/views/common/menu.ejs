@@ -1,0 +1,125 @@
+<script> 
+var menuid = "<%= menuid %>"; 
+
+$(function () { 
+				$('#nav_1').attr("class", ""); 
+				$('#nav_2').attr("class", "dropdown"); 
+				$('#nav_3').attr("class", "dropdown"); 
+				$('#nav_4').attr("class", "dropdown"); 
+				$('#nav_5').attr("class", ""); 
+
+		if(menuid == "1"){ 
+				$('#nav_1').attr("class", "active"); 
+			}else if(menuid == "2"){ 
+				$('#nav_2').attr("class", "active dropdown"); 
+			}else if(menuid == "3"){ 
+				$('#nav_3').attr("class", "active dropdown"); 
+			}else if(menuid == "4"){ 
+				$('#nav_4').attr("class", "active dropdown"); 
+			}else if(menuid == "5"){ 
+				$('#nav_5').attr("class", "active"); 
+			} else{ 
+				$('#nav_1').attr("class", "active"); 
+		} 
+	}); 
+	</script> 
+			<ul class="nav nav-tabs nav-customized"> 
+			<li class="active" id="nav_1"><a href="/"><span class="glyphicon glyphicon-home"></span> 메인</a></li> 
+			<li class="dropdown" id="nav_2"> 
+			<a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-list-alt"></span> 테스트 
+			<span class="caret"></span></a> 
+		<ul class="dropdown-menu"> 
+		<li><a href="/packet/control">테스트하기</a></li> 
+		<li><a href="/packet/realtime">실시간 보기</a></li> 
+		<li><a href="/packet/result">최종결과 보기</a></li>
+		
+	</ul> 
+</li> 
+
+		<li class="dropdown" id="nav_3"> 
+		<a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-cog"></span> 취약성 점검 
+		<span class="caret"></span></a> 
+		<ul class="dropdown-menu"> 
+		<li><a href="/scan/control">취약성 점검 하기</a></li> 
+		<li><a href="/scan/realtime">실시간 보기</a></li> 
+		<li><a href="/scan/result">최종결과 보기</a></li> 
+		<!--<li><a href="/scan/detail">상세</a></li>-->
+	</ul> 
+</li> 
+
+		<li class="dropdown" id="nav_4"> 
+			<a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-wrench"></span> 설정 
+			<span class="caret"></span></a> 
+		<ul class="dropdown-menu"> 
+			<li><a href="/config/packet">패킷 설정</a></li> 
+			<li><a href="/config/scan">스캔 설정</a></li> 
+			<li><a href="/config/passwd">비밀번호 설정</a></li>
+			<li><div class="line-split"></div></li> 
+			<li><a href="/log/search?flag=view&type=audit">감사 로그</a></li> 
+		</ul> 
+	</li> 
+
+	<li id="nav_5"><a data-toggle="modal" data-target="#infoModal"><span class="glyphicon glyphicon-info-sign"></span> 프로그램 정보</a></li> 
+	<li id="nav_6"><a data-toggle="modal" data-target="#logoutModal"><span class="glyphicon  glyphicon-log-out"></span> 로그아웃</a></li> 
+	<li id="nav_7" style="width:100px; height:39px; text-align:right;"><a><span class="glyphicon glyphicon-time"></span>&nbsp;<label id="timer">00:00</label></a></li></ul> 
+
+
+	<!-- Modal(Information)--> 
+		<div id="infoModal" class="modal fade" role="dialog"> 
+		<div class="modal-dialog modal-sm"> 
+	<!-- Modal content--> 
+		<div class="modal-content"> 
+		<div class="modal-header"> 
+		<button type="button" class="close" data-dismiss="modal">&times;</button> 
+		<h5 class="modal-title">프로그램 정보</h4> 
+	</div> 
+	<div class="modal-body"> 
+		<h3 style="text-align:center; margin: 0 0 0 0; font-family: Montserrat; font-size: 30px;font-weight: bold;">C&BIS</h3> 
+		<h6>제품명 : ASG(Automotive Security Gateway)</h6> 
+		<h6>버전 : 1.0.0</h6>         
+		<h6>배포일자 : 2018.07.06</h6> 
+		<h6>문의 : 031-502-4900</h6> 
+	</div> 
+	<div class="modal-footer"> 
+	<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">닫기</button> 
+	</div> 
+</div> 
+</div> 
+</div> 
+<!-- Modal(logout)--> 
+<div id="logoutModal" class="modal fade" role="dialog"> 
+<div class="modal-dialog modal-sm"> 
+<!-- Modal content--> 
+<div class="modal-content"> 
+<div class="modal-header"> 
+<button type="button" class="close" data-dismiss="modal">&times;</button> 
+<h5 class="modal-title">알림</h4> 
+</div> 
+<div class="modal-body"> 
+<h6><strong>로그아웃하시겠습니까?</strong></h6> 
+</div> 
+<div class="modal-footer"> 
+<button type="button" class="btn btn-primary btn-sm" id="btnLogout">확인</button> 
+<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">닫기</button> 
+</div> 
+</div> 
+</div> 
+</div> 
+<script> 
+var $timer = $('#timer'); 
+$(function(){ 
+$('#btnLogout').click(function(){ 
+window.location.href = '/logout'; 
+}); 
+
+setTimer(); 
+// 10초에 한번 서버 시간 
+setInterval(setTimer, 10000); 
+}); 
+
+function setTimer(){ 
+$.get('/etc/gettime', function(data){ 
+$timer.html(data.time.slice(11,16)); 
+}); 
+} 
+</script>

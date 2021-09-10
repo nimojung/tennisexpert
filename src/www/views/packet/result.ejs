@@ -1,0 +1,110 @@
+﻿﻿﻿<html>
+    <head>
+        <title><%=title%></title>
+        <% include ../common/header.ejs %>
+        <style>
+            .slow .toggle-group { transition: left 0.7s; -webkit-transition: left 0.7s; }
+        	.fast .toggle-group { transition: left 0.1s; -webkit-transition: left 0.1s; }
+        	.quick .toggle-group { transition: none; -webkit-transition: none; }
+        	.middle {
+        		height: 30px;
+        		display: flex;
+        		justify-content: center;
+        		align-items: center;
+        	}
+        </style>
+    </head>
+
+    <body class="demo3">
+        <!-- menu -->
+        <% include ../common/menu.ejs %>
+        <!--body -->
+        <div id="container">
+            <div class="subtitle form-group form-group-sm">
+                <label class="col-sm-3 control-label" style="height:20px;" id="navigation"><%=titleDetail%></label>
+                <div class="col-sm-9">
+                    <div class="col-sm-2">
+                    </div>
+                    <div class="col-sm-3">
+                    </div>
+                    <div class="col-sm-3">
+                    </div>
+                    <div class="col-sm-3">
+                    </div>
+                </div>
+            </div>
+            <table class="table table-bordered  table-striped table-customized" 
+                            id="VulnerabilityList"
+                            data-toggle="table" 
+                            data-pagination="true"
+                            border="1" 
+                            style="text-align: center;"
+                            data-page-size="7"
+                            data-url="/packet/result/select?id=<%=id%>"
+                            >
+                            <thead>
+                                <tr class="center">
+                                    <th data-field="rdate">시작 일시</th>
+                                    <th data-field="udate">종료 일시</th>
+                                    <th data-field="ip">대상ip</th>
+                                    <th data-field="name">이름</th>
+                                    <th data-field="result"  data-formatter="formatter" data-width= "50">결과</th>
+                                </tr>
+                            </thead>                
+                        </table>
+        </div>
+    </body>
+    <!-- bottom(하단처리) -->
+    <% include ../common/bottom.ejs %>
+
+    <script type="text/javascript">
+        function formatter(value, row, index, field) {
+                if (field == "result") {                
+                    result = "";
+                    var btnId = "btnResult" + row.id;
+                    var btnMsg = "";
+                    var color = "";
+
+                    if(row.status == 0){ //시작
+                        btnMsg = "시작";
+                        color = "#5bc0de";
+                    }else if(row.status == 1){ //진행
+                        btnMsg = "진행";
+                        color = "#E2B636";
+                    }else if(row.status == 2){ //완료
+                        btnMsg = "완료";
+                        color = "#2068DF";
+                    }else if(row.status == 3){ //실패
+                        btnMsg = "실패";
+                        color = "#c9302c";
+                    }else if(row.status == 4){ //중지
+                        btnMsg = "중지";
+                        color = "#c9302c";
+                    }
+                    // result = '<button class="btn btn-sm" id="' + btnId +'" + >' + btnMsg + '</button>';
+                    result = '<button class="btn btn-xs" id="' + btnId 
+                            +'" style = "background-color: ' + color
+                            + '; color: white; font-weight:bold">' + btnMsg + '</button>';
+                    /* 2018-08-20 */
+                    /* 이승호 주석 처리*/
+                    /**
+                    *   이부분 (ready)가 없으면 버튼 이벤트가 안먹힘..
+                    *   나중에 알아 볼것.
+                    **/
+                    $(document).ready(function(){
+                        $('#' + btnId).click(function(){
+                            if(row.status == 1){ //진행중 버튼 눌릴때만
+                                location.href = '/packet/realtime?id='+row.id;
+                            }else if(row.status == 0){ //진행중 버튼 눌릴때만
+                                location.href = '/packet/realtime?id='+row.id;
+                            }
+                            else {
+                                location.href = '/packet/detail?id='+row.id;
+                            }   
+                        });
+                    });
+                    return result;
+                }   
+            };
+    </script>
+</html>

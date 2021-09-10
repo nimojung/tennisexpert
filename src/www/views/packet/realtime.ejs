@@ -1,0 +1,440 @@
+<html>
+<head>
+	<title>테스트 실시간 보기</title>
+	<% include ../common/header.ejs %>
+	<!-- 나중에 헤더 ejs에 추가 시키기 -->
+	<script src="/js/code.js"></script>
+	<script src="/js/plugin.js"></script>
+	<!-- % 새로찾은것 실행을 위해 추가 -->
+	<script src="/js/jquery.color.min.js"></script>
+	<script src="/js/jquery.animateNumber.min.js"></script>
+	<!-- 여기까지가 새롭게 찾은거 -->
+	<link rel="stylesheet" type="text/css" href="/css/plugin.css">
+	<!-- 여기까지 -->
+	<style>
+        // bootstrap table td padding
+        table > tbody > tr > td{
+            padding: 5px !important;
+        }
+        [data-name="md-Padding"] table {
+            table-layout: fixed;
+            width: 100%; /* must have this set */
+        }
+        [data-name="md-Padding"] td {
+            padding:5px !important;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+
+	<style type="text/css">
+	/* 콘솔 테스트 */
+	.terminal_window {
+		margin: 0 auto;
+		width: 350px;
+		height: 200px;
+		text-align: left;
+		position: relative;
+		border-radius: 10px;
+	}
+	.terminal_window header {
+		background-color: #E0E8F0;
+		height: 30px;
+		border-radius: 8px 8px 0 0;
+		padding-left: 10px;
+	}
+	.terminal_window {
+		background-color: #0D1F2D;
+		color: #F4FAFF;
+		font-size: 11pt;
+	}
+	
+	.no_padding {
+		 padding: 0px;
+	}
+	</style>
+</head>
+<body class="demo3">
+	<!-- menu -->
+	<% include ../common/menu.ejs %>
+	<div id="container">
+		<div class="subtitle form-group form-group-sm">
+			<label class="col-sm-2 control-label" style="height:20px; font-size: 12px;" id="navigation">실시간 보기</label>
+			<div class="col-sm-9">
+				<div class="col-sm-2">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-3">
+				</div>
+				<div class="col-sm-1">
+				</div>
+				<form role="form">
+				</form>
+				<div class="col-sm-3" style="padding-left: 0px;">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-6" data-name="md-Padding">
+		<table class="table table-bordered table-striped table-customized" id="VulnerabilityList" data-toggle="table" data-url="/packet/control/slave?id=<%=id%>
+			">
+			<thead>
+				<tr class="center">
+					<th data-field="category" data-formatter="formatter" data-width="100">
+						패킷분류
+					</th>
+					<th data-field="cnt" data-formatter="formatter2">
+						상세정보
+					</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	<div class="col-sm-6" style="height: 100px;">
+		<div class="form-group form-group-sm col-sm-6">
+			<label class="control-label">이름</label>
+			<input type="text" class="form-control" id="name" disabled>
+			<label class="control-label">IP 주소 </label>
+			<input type="text" class="form-control" id="ip" disabled>
+			<button class=" btn btn-danger btn-lg" id="btnStop" style="width:100px; border:0; margin-top: 10px;"><span id="stopTest"></span></button>
+		</div>
+		<div class="col-sm-6" style="background-color:#F4F4F4; border-radius: 10px; padding-bottom: 5px;">
+			<div class="col-sm-12"  style="padding: 0px;">
+				<p id="ten" style="color: black; font-size: 50px; text-align:center;">0</p><div style="position:absolute; right:20px; top:35px;">%</div>
+			</div>
+			<div class="col-sm-12"  style="padding: 0px;">
+				<div class="col-sm-4" style="padding: 0px; text-align:left;">전체</div><div class="col-sm-8" style="padding: 0px;text-align:right;"><span id="ing1"></span></div>
+				<div class="col-sm-4" style="padding: 0px; text-align:left;">성공율</div><div class="col-sm-8" style="padding: 0px;text-align:right;"><span id="ing2"></span></div>
+				<div class="col-sm-4" style="padding: 0px; text-align:left;">전체</div><div class="col-sm-8" style="padding: 0px;text-align:right;"><span id="ing3"></span></div>
+			</div>
+		</div>
+		<div class="col-sm-12" style="width: 100%;">
+			<!-- 터미널 박스 -->
+			<div class="terminal_window">
+				<div id="typed-strings" class="terminal_text">
+				</div>
+				<span id="tailText"></span>
+			</div>
+		</div>
+		<!-- 테이블 클릭 했을때 모달 (패킷 점검하기 상세 정보) -->
+		<div class="modal fade" id="TestModal" style="color:black;">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+						<h4 class="modal-title" align="center">
+							<label class="control-label" style="font-size: 13px; padding-top: 10px;">
+							상세정보 </label>
+						</h4>
+						<div class="modal-body">
+							<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">				
+								패킷명 : <span id=packet></span>
+							</div>
+							<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">				
+								<div class="col-sm-5 no_padding" style="padding-top: 3px;">
+									진행율
+								</div>				
+								<div class="col-sm-7 no_padding">
+									<span id="live" style="font-size: 20px;"></span> %
+								</div>
+								<div class="col-sm-5 no_padding">
+									진행상태
+								</div>
+								<div class="col-sm-7 no_padding">
+									<span id="status"></span>
+								</div>
+							</div>
+							<div class="col-sm-12 no_padding" style="padding-bottom: 10px;">
+								<div class="col-sm-5 no_padding" style="padding-top: 3px;">성공율</div>
+								<div class="col-sm-7 no_padding"><span id="success_percent" style="font-size: 20px;"></span> %</div>
+								<div class="col-sm-5 no_padding">전체</div>
+								<div class="col-sm-7 no_padding">
+									<div class="col-sm-5 no_padding">성공</div>
+									<div class="col-sm-7 no_padding" style="text-align:right; padding-right: 30px;"><span id="sucess"></span></div>
+									<div class="col-sm-5 no_padding">실패</div>
+									<div class="col-sm-7 no_padding" style="text-align:right; padding-right: 30px;"><span id="fail"></span></div>
+									<div class="col-sm-5 no_padding">시도</div>
+									<div class="col-sm-7 no_padding" style="text-align:right; padding-right: 30px;"><span id="try"></span></div>
+								</div>
+							</div>
+						</div>
+					<div class="modal-bottom" align="right" style="padding: 5px;">
+						<button type="button" class="btn btn-default btn-md" data-dismiss="modal" id='btnCancel'>닫기</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var inStatus = 0;
+			var inVar = 0;
+			var id = '<%= id%>';
+			var $table = $('#VulnerabilityList');
+			var decimal_places = 1;
+			var decimal_factor = decimal_places === 0 ? 1 : decimal_places * 10;
+			var category_id = "";
+			var prePercent = 0;
+			// event 선언 -
+			$(function() {
+				$table.on('click-row.bs.table', function(e, row, $element) {
+					category_id = row.category;
+					$('#TestModal').modal('show');
+					setData([row]);
+				});
+			});
+			$("#VulnerabilityList").on('load-success.bs.table', function(e, data) {
+				getStatistics(data);
+				setData(data);
+			});
+			$(document).ready(function() {
+				if (id == "") {
+					alert("현재 데이터가 없습니다.");
+					window.location.href = "/packet/control";
+					return;
+				}
+				var stop = 0;
+				//var status = 0;
+				$('#btnStop').on('click', function() {
+					if (inStatus < 2) {
+						$.post("/packet/config/stop", {
+							id: id,
+							status: '4'
+						}, function(data) {
+							
+							if (data.changes == "1") {
+								
+								getTotal();
+							} else {
+								alert('실패');
+							}
+						});
+					} else {
+						location.href = '/packet/detail?id=' + id;
+					}
+				});
+			});
+			function getControlConfig() { //역활 : 
+				
+				var msgTest = "중지";
+				var valueTest = "";
+				$.get('/packet/config/controlconfig?id=<%= id%>', function(data) {
+					if (data.length > 0) {
+						$('#name').val(data[0].name);
+						$('#ip').val(data[0].ip);
+						// $('#abc').val(data[0].name); 
+						inStatus = data[0].status; //상태값
+						var btnId = status;
+						var btnClass = "";
+						if (inStatus == 1) { //상태값에 따라 버튼이 바뀜
+							msgTest = '중지';
+							$('#btnStop').css("background-color", "#FF0000");
+						} else if (inStatus >= 2) {
+							msgTest = '결과';
+							$('#btnStop').css("background-color", "#009900");
+							clearInterval(inVar); //결과 버튼이 바뀌고 나서 리플레쉬 안됨.	
+						}
+						$('#stopTest').html(msgTest);
+					}
+				});
+			}
+			function getTailFile() { // 역활: 명령어창 나오게 하기
+				$.get('/packet/config/tailfile?id=<%= id%>', function(data) {
+					$("#tailText").html("<pre id='pre' style='white-space: pre-wrap; overflow: auto; max-height: 170px; color:lightgreen; background:#0D1F2D;,transparent;border:0 solid black;text-align:left;'>" + data + "</pre>");
+					$('#pre').scrollTop($('#pre').prop("scrollHeight"));
+				});
+			}
+			function getStatistics(data) { //역할 : 퍼센트
+				var cnt = 0,
+				cnt2 = 0,
+				cnt3 = 0,
+				try_count = 0,
+				success_count = 0,
+				fail_count = 0,
+				totaltest = 0;
+				for (var i = 0; i < data.length; i++) {
+					cnt += data[i].cnt; // 전체(카테고리)
+					cnt2 += data[i].cnt2; // 완료(카테고리)
+					try_count += data[i].try_count;
+					success_count += data[i].success_count;
+					fail_count += data[i].fail_count;
+				}
+				cnt3 = cnt - cnt2;
+				var percent = 0, percent2 = 0;
+				var color = '#000000';
+				if (cnt > 0) {
+					percent = Math.round(cnt2 / cnt * 100);
+				}
+				if (percent >= 0 && percent <= 50) { //progressbar 색 변환
+					//color = 'DF2020';
+				} else if (percent >= 51 && percent <= 80) {
+					//color = '2068DF';
+				} else if (percent >= 81 && percent <= 100) {
+					//color = '5C9857';
+				}
+				if (try_count > 0) {
+					percent2 = success_count / try_count * 100;
+				}
+				
+				$('#ing1').html(numberFormatter(cnt2) + "/" + numberFormatter(cnt));
+				$('#ing2').html(percent2.toFixed(2) + " %");
+				$('#ing3').html(numberFormatter(success_count) + "/" + numberFormatter(try_count));
+				
+				if(prePercent === percent){
+					// nothing...					
+				}else{
+					prePercent = percent;
+					$('#ten')
+					.prop('number', 0)
+					.animateNumber({
+						number: percent,
+						color: color
+					},1000
+					);
+				}
+			}
+			//모달창텍스트 
+			function setData(data) {
+				for (var i = 0; i < data.length; i++) {
+					var row = data[i];
+					if(row.category == category_id){
+						var percent = 0, percent2 = 0;
+						var cnt = row.cnt; 
+						var cnt2 = row.cnt2;
+						var cnt3 = cnt - cnt2;
+						// 진행율 계산
+						if (cnt > 0) {
+							percent = Math.round(cnt2 / cnt * 100);
+						}
+						var success_count2 = row.success_count; // 성공 횟수
+						var fail_count2 = row.fail_count; //실패 횟수
+						var try_count2 = row.try_count; //시도 횟수
+						if (success_count2 == null && try_count2 == null) {
+							fail_count2 = 0;
+							success_count2 = 0;
+							try_count2 = 0;
+							percent2 = 0;
+						}
+						// 성공율 계산
+						if(try_count2 > 0){
+							percent2 = Math.round(success_count2 / try_count2 * 100, -2);
+						}
+						// 상태값 처리
+						var status = row.status;
+						//상태값이 1일때 진행으로 바뀌는 부분 
+						if((status == 0) && ((row.try_count > 0) || (row.cnt2 > 0))){
+							status = 1;
+						}
+						var btnMsg = "";  
+						var color = "";
+						if(status == 0){ //시작 
+							btnMsg = "시작"; 
+							color = "#5bc0de";
+						}else if(status == 1){ //진행 
+							btnMsg = "진행"; 
+							color = "#E2B636";
+						}else if(status == 2){ //완료 
+							btnMsg = "완료"; 
+							color = "#2068DF"; 
+						}else if(status == 3){ //실패 
+							btnMsg = "실패"; 
+							color = "#c9302c";
+						}else if(status == 4){ //중지 
+							btnMsg = "중지"; 
+							color = "#c9302c"; 
+						} 
+						//텍스트 표시하는 부분
+						$('#packet').html(category[category_id]);
+						// console.log('퍼센트... => '+$percent2);
+						// 진행율 % 표시
+						$('#live').html(percent);
+						// 성공, 실패, 시도
+						$('#sucess').html(numberFormatter(success_count2));
+						$('#fail').html(numberFormatter(fail_count2));
+						$('#try').html(numberFormatter(try_count2));
+						//진행상태
+						$('#status').html(btnMsg, $('#status').css("color", color));
+						// 성공율 % 표시
+						$('#success_percent').html(percent2);					
+
+						break;
+					}
+				}
+			};
+				function getTotal() {
+					getControlConfig();
+					getTailFile();
+					$("#VulnerabilityList").bootstrapTable('refresh', {
+					slient: true
+				});
+			}
+			getTotal();
+			var inVar = setInterval(getTotal, 5000);
+				function formatter(value, row, index, field) {
+					var id = row.id;
+					if (field == "cnt") {
+					var total = row.cnt;
+					var used = row.cnt2;
+					var test_value = 99.124;
+					var percent = Math.round(used / total * 100, -2);
+					var percent2 = percent + "%";
+				result = '<div class="progress style="padding:5px;" style="margin-bottom:0px; border:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:50%;">' + percent2 + '</div><label style="width:50%; text-align:right;">사용 : ' + used + " / 전체 : " + total + "</label></div>";
+			}else if (field == "category") {
+			result = category[value];
+		}
+		return result;
+	};
+			
+			function formatter2(value, row, index, field) { // 테이블 progress bar
+				var total = row.cnt;
+				var fontColor = '';
+				var success_count = row.success_count; // 성공 횟수
+				var fail_count = row.fail_count; //실패 횟수
+				var try_count = row.try_count; //시도 횟수 
+				var prg = row.id;				
+				//var percent = Math.round(success_count / try_count * 100, -2);
+				if (try_count == null){
+					fail_count = 0;
+					success_count = 0;
+					try_count = 0;
+				}
+				var percent = 0;
+				// 성공률
+				if(try_count > 0){
+					percent = Math.round(success_count / try_count * 100, -2);
+				}
+				// 진행률
+				if(total > 0){
+					percent = Math.round(row.cnt2 / total * 100, -2);	
+				}
+				// 퍼센트가 0 ~ 20% 일때 글자색이 흰색이라 (바탕도 흰색) 잘 안보여서 추가
+				if (percent >= 0 && percent <= 20) {
+					var font_color = 'black';
+				}
+				var percent2 = percent + "%";
+				if (percent >= 0 && percent <= 50) { //progressbar 색 변환
+					var color = 'DF2020';
+					// fontColor = 'white';
+				} else if (percent >= 51 && percent <= 80) {
+					color = '2068DF';
+					fontColor = '000000';
+				} else if (percent >= 81 && percent <= 100) {
+					color = '5C9857';
+					fontColor = '000000';
+				}
+				if (percent >= 0 && percent <= 50) {
+					fontColor = '000000';
+				}
+				
+				result = '<div class="col-sm-12" style="padding:5px;"><div class="col-sm-5 progress " style="margin-bottom:0px; border:0px; padding-right:0px; padding-left:0px;"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + percent + '" aria-valuemin="0" aria-valuemax="100" style="width:' + percent2 + '; background-color: ' + color + '; color: ' + font_color + ';">' + percent2 + '</div></div>' + '<label style=" width: text-align:right; margin-left:10px;">완료 : ' + row.cnt2 + "  전체 : " + total + "</label></div>";
+				return result;
+			}
+			
+			function numberFormatter(data){
+				var total = 0;
+				if (data > 0){
+					return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				}
+				return data;
+			};
+			
+		</script>
+		</html>

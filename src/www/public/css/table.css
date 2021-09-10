@@ -1,0 +1,51 @@
+/* class */
+.table-customized{
+  font-size: 13px;
+}
+
+/* class */
+.nav-customized{
+	font-size:12px;  	
+}
+
+/* 하부에 연결된... */
+thead > tr > th{
+	text-align: center;
+}
+
+/* id */
+#container{
+	padding: 3px 3px 3px 3px;
+}
+
+#navigation{	
+	text-align: left;
+	padding: 3px 3px 3px 3px;
+}
+
+.line-split {
+	width: 100%;
+   	height: 1px;
+   	background-color: #e0e0eb;
+   	margin: 0 auto;
+}
+
+.subtitle{
+  	font-size: 13px;	
+  	font-weight: bold;
+	padding: 5px 5px 5px 15px;
+	height: 30px;
+}
+
+.navi_title{
+	float: left;
+	width: 30%;
+	position: relative;
+}
+
+.navi_button{
+	float: right;
+	width: 70%;
+	position: relative;
+	display: inline-block;
+}
